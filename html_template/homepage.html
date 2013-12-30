@@ -1,0 +1,20 @@
+{% extends "base-head.html" %}
+
+{% block content_app %}
+  <a href="/" class="main-title">UWaterloo Utilities</a>
+  <h4 class="sub-title">Done by Honghao Zhang</h4>
+  <table class="home-table">
+  	{% for app in apps %}
+  	  <tr>
+        <td>
+          <form action="{{app.link}}">
+            <input type="submit" value="{{app.name}}">
+          </form>
+        </td>
+        <td>
+          <span class="home-table-description">&nbsp; {{app.description}}</span>
+        </td>
+      </tr>
+  	{% endfor %}
+  </table>
+{% endblock %}

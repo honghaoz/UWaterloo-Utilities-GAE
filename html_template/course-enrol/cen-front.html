@@ -1,0 +1,47 @@
+{% extends "/course-enrol/cen-base.html" %}
+
+{% block content_cen %}
+	<div class="cen-table">
+	<img hidden="true" class="uw-icon" alt="The University of Waterloo" src="http://uwaterloo.ca/images/template/uw_wordmark.gif">
+  	<form method="post">
+  	<h3>Choose Your Education Level:</h3>
+  	  <select name ="level">
+	    <option value="under">Undergraduate
+	    <option value="grad" selected>Graduate
+	  </select>
+	  
+	  <br>
+	  <h3>Choose the term you are looking for:</h3>
+	  <select name = "sess">
+	  {% for sess in sess_values %}
+	    {% if sess[1] == True %}
+	      <option value="{{sess[0]}}" selected>{{term_dic[sess[0]]}}
+	    {% else %}
+	      <option value="{{sess[0]}}">{{term_dic[sess[0]]}}
+	    {% endif %}
+	  {% endfor %}
+	  </select>
+	  
+	  <br>
+	  <h3>Choose the subject you are looking for (One must be selected):</h3>
+	  <select name="subject">
+	    {% for subject in subject_values %}
+	      {% if subject == 'ECE' %}
+	        <option value="{{subject}}" selected>{{subject}}
+	      {% else %}
+	        <option value="{{subject}}">{{subject}}
+	      {% endif %}
+	    {% endfor %}
+	  </select>
+	  
+	  <br>
+	  <h3>Type part or all of the course number you are looking for:</h3>
+	  <input name="cournum" size="5" style="font-size:medium;">
+	  <br>
+	  <br>
+	  <input type="submit" style="font-size: large;" value="Search!">
+	  <input type="reset" style="font-size: large;" value="Clear Fields">
+	</form>
+	  <p class="home-table-description">*This information is updated hourly between the hours of 8:00am and 8:00pm.</p>
+	</div>
+{% endblock %}

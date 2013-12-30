@@ -1,0 +1,42 @@
+{% extends "base-head.html" %}
+
+{% block content_app %}
+  <a href="/" class="main-title">UWaterloo Utilities</a>
+  <h4 class="sub-title">Done by Honghao Zhang</h4>
+  <table class="add-form">
+  <form method="post">
+    <table>
+      <tr>
+        <td>App Name: </td>
+          <td>
+            <input type="text" name="name" value="{{name}}">
+          </td>
+          <td class="error">
+            {{name_error}}
+          </td>
+      </tr>
+      <tr>
+        <td>Url: </td>
+        <td>
+          <input type="url" name="link" value="{{link}}">
+        </td>
+        <td class="error">
+          {{link_error}}
+        </td>
+      </tr>
+      <tr>
+        <td>Description: </td>
+        <td>
+          <input type="text" name="description" value="{{description}}">
+        </td>
+        <td class="error">
+          {{description_error}}
+        </td>
+      </tr>
+    </table>
+    <input type="hidden" name="referer" value="{{referer}}">
+    <input type="submit" value="Add">
+  </form>
+  </table>
+{% endblock %}
+
