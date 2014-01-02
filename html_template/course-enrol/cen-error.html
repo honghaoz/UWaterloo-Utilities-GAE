@@ -1,0 +1,10 @@
+{% extends "/course-enrol/cen-base.html" %}
+
+{% block content_cen %}
+	<div class="cen-center">
+		<br>
+		{% for error in errors %}
+			<h2 align="center">{{error}}</h2>
+		{% endfor %}
+	</div>
+{% endblock %}
