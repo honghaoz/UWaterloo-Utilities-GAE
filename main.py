@@ -167,8 +167,21 @@ class ECEHandle(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
+    ## used for make hash string in cookies
+    SECRET = "I am a SECRET"
+    def hash_str(self,s):
+        return hmac.new(self.SECRET, s).hexdigest()
+
+    def make_secure_val(self, s):
+        return "%s|%s" % (s, self.hash_str(s))
+
+    def check_secure_val(self, h):
+        val = h.split('|')[0]
+        if h == self.make_secure_val(val):
+            return val
+
     def set_secure_cookie(self, name, val):
-        cookie_val = make_secure_val(val)
+        cookie_val = self.make_secure_val(val)
         self.response.headers.add_header('Set-Cookie', '%s=%s; Path=/' % (name, cookie_val))
 
     def read_secure_cookie(self, name):
@@ -176,7 +189,7 @@ class ECEHandle(webapp2.RequestHandler):
         if cookie_val == None:
             return None
         else:
-            return check_secure_val(cookie_val)
+            return self.check_secure_val(cookie_val)
 
     ## login means set the cookie
     def login(self, user):
@@ -213,15 +226,91 @@ class AddApp(ECEHandle):
             self.referer = self.referer
         self.render_page()
 
+level = ""
+sess = ""
+subject = ""
 
 class CourseEnrolmentNotifier(ECEHandle):
+    # data used for post get data
     level = ""
     sess = ""
     subject = ""
     cournum = ""
+    # data used for read query page
     term_dic = {}
     sess_values = []
     subject_values = []
+
+    def render_front_page(self, sess_values = "", term_dic = "", subject_values = ""):
+        self.render('/course-enrol/cen-front.html', sess_values = sess_values, term_dic = term_dic, subject_values = subject_values)
+
+    def render_error_page(self, errors = []):
+        self.render('/course-enrol/cen-error.html', errors = errors)
+
+    def render_result_course_page(self, Dic_CCourse):
+        global level
+        level = level
+        global sess
+        sess = sess
+        global subject
+        subject = subject
+        self.render('/course-enrol/cen-result-course.html', level = level,
+                                                            sess = sess,
+                                                            subject = subject,
+                                                            Dic_CCourse = Dic_CCourse)
+    def render_result_class_page(self, course):
+        global level
+        level = level
+        global sess
+        sess = sess
+        global subject
+        subject = subject
+        self.render('/course-enrol/cen-result-class.html', course = course,
+                                                           level = level,
+                                                           sess = sess,
+                                                           subject = subject)
+
+    def get(self):
+        scheduleURL = "http://www.adm.uwaterloo.ca/infocour/CIR/SA/%s.html"
+        graduateSampleURL = scheduleURL % "grad"
+        if self.readQueryFrontPage(graduateSampleURL):
+            self.render_front_page(self.sess_values, self.term_dic, self.subject_values)
+        else:
+            self.render_error_page(errors = ["Sorry...", "Query Page is not available,", "Please try again later!", "Thanks!"])
+
+    def post(self):
+        query_url = "http://www.adm.uwaterloo.ca/cgi-bin/cgiwrap/infocour/salook.pl"
+        # produce query_object
+        self.level = self.request.get('level')
+        self.sess = self.request.get('sess')
+        self.subject = self.request.get('subject')
+        self.cournum = self.request.get('cournum')
+        if self.level == 'grad':
+            global level
+            level = 'Graduate'
+        elif self.level == 'under':
+            global level
+            level = 'Undergraduate'
+        global sess
+        sess = str(self.term_dic[self.sess])
+        global subject
+        subject = str(self.subject)
+        
+        query_dic = {}
+        query_dic['level'] = self.level
+        query_dic['sess'] = self.sess
+        query_dic['subject'] = self.subject
+        query_dic['cournum'] = self.cournum
+        query_obj = urllib.urlencode(query_dic)
+        # read query result
+        queryResult = self.readQueryResult(query_url, query_obj)
+        if queryResult == True:
+            self.render_result_course_page(Dic_CCourse)
+        elif queryResult == 'NO RESULT':
+            pass
+        else:
+            self.render_error_page(errors = ["Sorry...", "Query Response Time Out!", "Please try again later..."])
+
     def readQueryFrontPage(self, url):
         try:
             content = urllib2.urlopen(url).read()
@@ -279,18 +368,6 @@ class CourseEnrolmentNotifier(ECEHandle):
         else:
             return False
 
-    def render_front_page(self, sess_values = "", term_dic = "", subject_values = ""):
-        self.render('/course-enrol/cen-front.html', sess_values = sess_values, term_dic = term_dic, subject_values = subject_values)
-    def render_error_page(self, errors = []):
-        self.render('/course-enrol/cen-error.html', errors = errors)
-    def get(self):
-        scheduleURL = "http://www.adm.uwaterloo.ca/infocour/CIR/SA/%s.html"
-        graduateSampleURL = scheduleURL % "grad"
-        if self.readQueryFrontPage(graduateSampleURL):
-            self.render_front_page(self.sess_values, self.term_dic, self.subject_values)
-        else:
-            self.render_error_page(errors = ["Sorry...", "Query Page is not available,", "Please try again later!", "Thanks!"])
-
     def readClasses(self, table, id, subject, catalog_num):
         class_num = None
         comp_sec = None
@@ -318,7 +395,7 @@ class CourseEnrolmentNotifier(ECEHandle):
                 continue
             elif 9 < len(list(tr.children)) <= 13:
                 if tr.contents[0].get_text().strip() == u'':
-                    c = Dic_CClass_get_by_id(id + "." + str(class_num))
+                    c = Dic_CClass_get_by_id(id + "-" + str(class_num))
                     # extra lines of additional information for previous class
                     # include: colspan = 6 : Reserve
                     #          colspan = 10 : Held With
@@ -417,7 +494,7 @@ class CourseEnrolmentNotifier(ECEHandle):
                     instructor = str(tr.contents[12].string.strip())
                 except:
                     instructor = None
-                newCClass = CClass(id + "." + str(class_num),
+                newCClass = CClass(id + "-" + str(class_num),
                                    subject,
                                    catalog_num,
                                    class_num,
@@ -434,12 +511,12 @@ class CourseEnrolmentNotifier(ECEHandle):
                                    bldg_room,
                                    instructor,
                                    [])
-                Dic_CClass_put(id + "." + str(class_num), newCClass)
+                Dic_CClass_put(id + "-" + str(class_num), newCClass)
                 Dic_CCourse_get_by_id(id).classes.append(newCClass)
                 row += 1
             # need revise
             elif len(list(tr.children)) < 9 and (not tr.i == None):
-                c = Dic_CClass_get_by_id(id + "." + str(class_num))
+                c = Dic_CClass_get_by_id(id + "-" + str(class_num))
                 col6 = None
                 enrol_cap = None
                 enrol_tot = None
@@ -525,10 +602,10 @@ class CourseEnrolmentNotifier(ECEHandle):
                 row += 1
             elif len(list(tr.children)) == 2 and (not tr.table == None):
                 if note:
-                    Dic_CCourse_put(subject + "." + str(catalog_num), CCourse(subject, catalog_num, units, title, note))
+                    Dic_CCourse_put(subject + "-" + str(catalog_num), CCourse(subject, catalog_num, units, title, note))
                 else:
-                    Dic_CCourse_put(subject + "." + str(catalog_num), CCourse(subject, catalog_num, units, title))
-                if self.readClasses(tr.table, subject + "." + str(catalog_num), subject, catalog_num):
+                    Dic_CCourse_put(subject + "-" + str(catalog_num), CCourse(subject, catalog_num, units, title))
+                if self.readClasses(tr.table, subject + "-" + str(catalog_num), subject, catalog_num):
                     row += 1
                     continue
                 else:
@@ -542,58 +619,36 @@ class CourseEnrolmentNotifier(ECEHandle):
         try:
             query_result = urllib2.urlopen(query_url, query_obj).read()
         except urllib2.URLError:
-            return False
+            return 'URL ERROR'
         if query_result:
+            Dic_CCourse.clear()
+            Dic_CClass.clear()
             soup = BeautifulSoup(query_result)
             table = soup.table
             if table:
                 if self.readCourses(table):
                     return True
                 else:
-                    return False
+                    return 'TABLE ERROR'
             else:
                 self.render_error_page(errors = ["Sorry...", "Sorry, but your query has no matches."])
+                return 'NO RESULT'
         else:
             return False
-    def post(self):
-        query_url = "http://www.adm.uwaterloo.ca/cgi-bin/cgiwrap/infocour/salook.pl"
-        # produce query_object
-        self.level = self.request.get('level')
-        self.sess = self.request.get('sess')
-        self.subject = self.request.get('subject')
-        self.cournum = self.request.get('cournum')
-        query_dic = {}
-        query_dic['level'] = self.level
-        query_dic['sess'] = self.sess
-        query_dic['subject'] = self.subject
-        query_dic['cournum'] = self.cournum
-        query_obj = urllib.urlencode(query_dic)
-        # read query result
-        if self.readQueryResult(query_url, query_obj):
-            #self.write("success!")
-            res = ""
-            for k, d in Dic_CClass.items():
-                res += str(d.id) + "\t" + d.subject + "\t" + str(d.catalog_num) + "\t" + str(d.class_num) + "\t" + str(d.comp_sec) + "\t" + str(d.camp_loc) + " " + str(d.assoc_class) + "\t" + str(d.rel1) + "\t" + str(d.rel2) + "\t" + str(d.enrol_cap) + "\t" + str(d.enrol_tot) + "\t" + str(d.wait_cap) + "\t" + str(d.wait_tot) + "\t" + str(d.time_date) + "\t" + str(d.bldg_room) + "\t" + str(d.instructor) + "\n"
-                res += '\n\n\n'
-                for note in d.note:
-                    if note.col6 == None and note.col10 == None:
-                        res += str(note.time_date) + '\n'
-                        res += str(note.bldg_room) + '\n'
-                        res += str(note.instructor) + '\n'
-                    elif note.col6 == None:
-                        res += note.col10 + '\n'
-                    elif note.col10 == None:
-                        res += note.col6 + '\n'
-                        res += str(note.enrol_cap) + '\n'
-                        res += str(note.enrol_tot) + '\n'
-                        res += str(note.time_date) + '\n'
-                        res += str(note.bldg_room) + '\n'
-                        res += str(note.instructor) + '\n'
-                    else:
-                        res += "errrrrrrrrr" + '\n'
-            logging.info(res)
-        else:
-            self.render_error_page(errors = ["Sorry...", "Query Response Time Out!", "Please try again later..."])
+
+class CEN_class_page(CourseEnrolmentNotifier):
+    def get(self, class_id):
+        subject, catalog_num = class_id.split('-')
+        theCourse = Dic_CCourse_get_by_id(subject + '-' + catalog_num)
+        self.render_result_class_page(theCourse)
+        # try:
+        #     subject, catalog_num = class_id.split('-')
+        #     theCourse = Dic_CCourse_get_by_id(subject + '-' + catalog_num)
+        #     self.render_result_class_page(theCourse)
+        # except:
+        #     self.error(404)
+            # self.render_error_page(errors = ["Sorry...", "404 NOT FOUND, this page is not found!"])
+        
 
 class FlushCourseClass(ECEHandle):
     def render_error_page(self, errors = []):
@@ -621,11 +676,14 @@ class FlushCourseClass(ECEHandle):
 #             time -= 1
 #         self.write(count)
 
-
+# python regex???? to solve it!!!!!!
+classID = r'([A-Z\-]+[a-zA-Z0-9\-]+[0-9]+)'
+courseID = r'([A-Z\-]+[a-zA-Z0-9\-]+)'
 app = webapp2.WSGIApplication([
     ('/?', HomePage),
     ('/add-app', AddApp),
     ('/uw-cen/?', CourseEnrolmentNotifier),
+    ('/uw-cen/' + courseID, CEN_class_page),
     ('/uw-cen/flush', FlushCourseClass)
     #('/test', Test)
 ], debug=True)

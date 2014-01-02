@@ -1,5 +1,5 @@
 application: uw-app
-version: 1-4-dict
+version: 1-5-prettify
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -9,8 +9,11 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
-- url: /static
-  static_dir: static
+- url: /stylesheets
+  static_dir: stylesheets
+
+- url: /images
+  static_dir: images
 
 - url: .*
   script: main.app

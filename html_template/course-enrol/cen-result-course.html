@@ -1,0 +1,25 @@
+{% extends "/course-enrol/cen-base.html" %}
+
+{% block content_cen %}
+	<div class="cen-center">
+		<table class="course-table-head">
+			<tr>
+				<td>Level: <span class="blue">{{level}}<span></td>
+				<td>Term: <span class="blue">{{sess}}</span></td>
+				<td>Department: <span class="blue">{{subject}}</span></td>
+			<tr>
+		</table>
+		<br>
+		<span class="choose" style="position: relative; left: 33px;">Choose the course you want to view:</span>
+		<br>
+		<br>
+		<table class="course-table">
+		{% for k, course in Dic_CCourse.items() %}
+			<tr>
+				<td><a href="/uw-cen/{{course.subject}}-{{course.catalog_num}}" class="course-num-td">{{course.subject}} {{course.catalog_num}}</a></td>
+				<td class="course-title-td">{{course.title}}</td>
+			</tr>
+		{% endfor %}
+		</table>
+	</div>
+{% endblock %}

@@ -2,6 +2,7 @@ body {
     position: relative;
     font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
+    font-weight: 300;
     
     width: 700px;
     margin: 0 auto;
@@ -39,20 +40,49 @@ textarea {
   font-size: 17px;
   font-family: monospace;
 }
+    
+input[type=text] {
+	position: relative;
+	top: 6px;
+	border:1px solid #ccc;
+	padding: 7px 3px;
+	width: 140px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: #fcfcfc;
+}
+
 
 input[type=submit] {
-  font-size: 20px;
+	font-size: 14px;
+	border:1px solid #ccc;
+	padding:5px 15px; 
+	background: rgba(0,0,0,0.03); 
+	cursor:pointer;
+	-webkit-border-radius: 3px;
+	border-radius: 3px; 
+}
+
+input[type=reset] {
+	padding:5px 10px; 
+	border:1px solid #ccc;
+	background: rgba(0,0,0,0.05); 
+	cursor:pointer;
+	-webkit-border-radius: 3px;
+	border-radius: 3px; 
 }
 
 select {
-	font-size: medium;
+	font-size: 15px;
+	font-weight: 300;
 }
 
 .main-title {
     display: block;
     color: #346bb9;
     font-size: 39px;
-    font-weight: bold;
+    font-weight: 300;
     text-align: center;
     margin-bottom: 30px;
     text-decoration: none;
@@ -60,6 +90,7 @@ select {
 
 .sub-title {
 	text-align:center;
+	font-weight: 300;
 }
 
 .cen-center {
@@ -69,16 +100,28 @@ select {
 
 .uw-icon {
 	position: relative; 
-	top: 60px; 
+	top: 50px; 
 	left: 370px;
+	height: 50%;
+	width: 50%;
+	-webkit-border-top-left-radius: 3px;
+	-webkit-border-top-right-radius: 3px;
+	-moz-border-radius-topleft: 3px;
+	-moz-border-radius-topright: 3px;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
+
+}
+
 }
 .home-table {
-	width:600px;
+	width:630px;
 	margin:auto auto auto auto;
 }
 
 .home-table-description {
 	color : gray;
+	font-weight: 300;
 }
 
 .add-form {
@@ -86,6 +129,84 @@ select {
     top: 10px;
     left: 10px;
 }
+
+.choose {
+	font-size:18px;
+}
+
+.select-style {
+	position: relative;
+	top: 6px;
+	padding: 3px 3px;
+    border: 1px solid #ccc;
+    width: 140px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: #fcfcfc url("data:image/png;base64,R0lGODlhDwAUAIABAAAAAP///yH5BAEAAAEALAAAAAAPABQAAAIXjI+py+0Po5wH2HsXzmw//lHiSJZmUAAAOw==") no-repeat 92% 50%;
+}
+
+.select-style select {
+    padding: 3px 8px;
+    width: 120%;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    background-image: none;
+    -webkit-appearance: none;
+}
+
+.select-style select:focus {
+    outline: none;
+}
+
+/*Styles for cen-reslt*/
+.blue {
+	color: #346bb9;
+}
+.course-table-head {
+	width:550px;
+	margin:auto auto auto auto;
+	font-size: 17px;
+	font-weight: 300;
+}
+
+.course-table {
+	width:500px;
+	margin:auto auto auto 30px;
+}
+.course-num-td {
+	font-size: 20px;
+	font-weight: 300;
+	color: #346bb9;
+	text-decoration: none;
+}
+
+.course-num-td:visited {
+	font-size: 20px;
+	font-weight: 310;
+	color: #346bb9;
+	text-decoration: none;
+}
+
+.course-title-td {
+	font-size: large;
+	font-weight: 300;
+	position: relative;
+	left: 15px;
+	text-decoration: none;
+}
+
+.course-title-td:visited {
+	font-size: large;
+	font-weight: 300;
+	position: relative;
+	left: 15px;
+	text-decoration: none;
+}
+
+
+
+
 
 .large-font {
 	font-size: large;
