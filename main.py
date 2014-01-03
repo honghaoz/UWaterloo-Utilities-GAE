@@ -226,9 +226,19 @@ class AddApp(ECEHandle):
             self.referer = self.referer
         self.render_page()
 
+# global variables, used for communication between handlers
 level = ""
 sess = ""
 subject = ""
+
+# global functions can be called in jinja2 templates
+# produce true if the note of a class has col10 != None
+def noteHasCol10(note):
+    for item in note:
+        if not item.col10 == None:
+            return True
+    return False
+jinja_env.globals.update(noteHasCol10=noteHasCol10)
 
 class CourseEnrolmentNotifier(ECEHandle):
     # data used for post get data

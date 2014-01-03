@@ -1,5 +1,5 @@
 application: uw-app
-version: 1-5-prettify
+version: 1-6-classpage
 runtime: python27
 api_version: 1
 threadsafe: yes

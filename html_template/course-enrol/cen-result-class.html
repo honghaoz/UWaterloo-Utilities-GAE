@@ -10,9 +10,149 @@
 			<tr>
 		</table>
 		<br>
-		<span class="choose" style="position: relative; left: 27px;">Choose a class you want to set an Email alert:</span>
-		<br>
-		<br>
-		
 	</div>
+	<div class="class-table">
+		<span class="choose" style="position: relative; left: 0px;">Choose a class you want to set an Email alert:</span>
+	</div>
+	<br>
+	<div class="paper">
+		<table class="class-table">
+			<tr>
+				<td class="course-num-td">{{course.subject}} {{course.catalog_num}}</td>
+				<td class="course-num-td"><span class="blue">{{course.title}}</span></td>
+				<td class="course-credit-td"><span class="blue">Credits: </span>{{course.units}}</td>
+			</tr>
+			{% if not course.note == None %}
+			<tr>
+				<td colspan="3" class="course-note-td"><i>{{course.note}}</i></td>
+			</tr>
+			{% endif %}
+		</table>
+	</div>
+		{% for class in course.classes %}
+		<br>
+		<br>
+	<div class="paper">
+		<table class="class-table">
+			<table>
+				<tr>
+					<td><div style="width: 150px;"><span class="blue">Class Number: </span>{{class.class_num}}</div></td>
+					<td><div style="width: 150px;"><span class="blue">Section: </span>{{class.comp_sec}}</div></td>
+					<td><div style="width: 150px;"><span class="blue">Campus: </span>{{class.camp_loc}}</div></td>
+				</tr>
+			</table>
+			<table>
+			<tr>
+				<td><span class="blue">Enrolment: </span></td>
+				<td>{{class.enrol_tot}} / {{class.enrol_cap}} (capacity / total)</td>
+			</tr>
+			<tr>
+				<td><span class="blue">Waitlist: </span></td>
+				<td>{{class.wait_tot}} / {{class.wait_cap}} (capacity / total)</td>
+			</tr>
+			{% if noteHasCol10(class.note) %}
+			<tr>
+				<td><span class="blue">Notes: </span></td>
+				<td>
+			{% for note in class.note %}
+				{% if not note.col10 == None %}
+				<span><i>{{note.col10}}</i></span>
+				&nbsp;&nbsp;&nbsp;
+				{% endif %}
+			{% endfor %}
+				</td>
+			</tr>
+			{% endif %}
+			</table>
+			<table>
+			<tr>
+				<td><div style="width: 200px;"></div></td>
+				<td><div style="width: 150px;"></div></td>
+				<td><div style="width: 150px;"></div></td>
+			</tr>
+			<tr>
+				<td><span class="blue">Time, Days, Date</span></td>
+				<td align="center"><span class="blue">Building, Room</span></td>
+				<td align="center"><span class="blue">Instructor</span></td>
+			</tr>
+			<tr>
+				{% if class.time_date == None %}
+					<td></td>
+				{% else %}
+					<td>{{class.time_date}}</td>
+				{% endif %}
+				
+				{% if class.bldg_room == None %}
+					<td></td>
+				{% else %}
+					<td align="center">{{class.bldg_room}}</td>
+				{% endif %}
+				
+				{% if class.instructor == None %}
+					<td></td>
+				{% else %}
+					<td align="center">{{class.instructor}}</td>
+				{% endif %}
+			</tr>
+			
+			{% for note in class.note %}
+				{% if not note.col6 == None %}
+				<tr>
+					{% if note.time_date == None %}
+					   <td></td>
+					{% else %}
+					   <td>{{note.time_date}}</td>
+					{% endif %}
+					
+					{% if note.bldg_room == None %}
+					   <td></td>
+					{% else %}
+					   <td align="center">{{note.bldg_room}}</td>
+					{% endif %}
+					
+					{% if note.instructor == None %}
+					   <td></td>
+					{% else %}
+					   <td align="center">{{note.instructor}}</td>
+					{% endif %}
+					
+					<td style="font-size:12px;"><i>{{note.col6}}</i></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td style="font-size:12px;">Enrolment: {{note.enrol_tot}} / {{note.enrol_cap}}</td>
+				</tr>
+				{% endif %}
+			{% endfor %}
+			
+			{% for note in class.note %}
+				{% if note.col10 == None and note.col6 == None %}
+				<tr>
+					{% if note.time_date == None %}
+					   <td></td>
+					{% else %}
+					   <td>{{note.time_date}}</td>
+					{% endif %}
+					
+					{% if note.bldg_room == None %}
+					   <td></td>
+					{% else %}
+					   <td align="center">{{note.bldg_room}}</td>
+					{% endif %}
+					
+					{% if note.instructor == None %}
+					   <td></td>
+					{% else %}
+					   <td align="center">{{note.instructor}}</td>
+					{% endif %}
+				</tr>
+				{% endif %}
+			{% endfor %}
+			</table>
+		</table>
+	</div>
+		{% endfor %}
+	
 {% endblock %}

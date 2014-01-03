@@ -10,8 +10,10 @@
 			<tr>
 		</table>
 		<br>
-		<span class="choose" style="position: relative; left: 33px;">Choose the course you want to view:</span>
+		<span class="choose">Choose the course you want to view:</span>
 		<br>
+		<br>
+		<div class="paper">
 		<br>
 		<table class="course-table">
 		{% for k, course in Dic_CCourse.items() %}
@@ -21,5 +23,7 @@
 			</tr>
 		{% endfor %}
 		</table>
+		<br>
+		</div>
 	</div>
 {% endblock %}

@@ -1,7 +1,21 @@
-{% extends "base-head.html" %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>UW Course Enrolment Notifier</title>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  </head>
+  
+  <body>
+    <div>   
+		<a href="/uw-cen" class="main-title">UW Course Enrolment Notifier</a>
+		{% block content_cen %}
+		{% endblock %}
+    </div>
+    <br>
+    <br>
+    <footer>
+		Created by Honghao.Z
+    </footer>	
+  </body>
+</html>
 
-{% block content_app %}
-  <a href="/uw-cen" class="main-title">UW Course Enrolment Notifier</a>
-  {% block content_cen %}
-  {% endblock %}
-{% endblock %}

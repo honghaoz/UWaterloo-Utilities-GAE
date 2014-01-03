@@ -110,7 +110,6 @@ select {
 	-moz-border-radius-topright: 3px;
 	border-top-left-radius: 3px;
 	border-top-right-radius: 3px;
-
 }
 
 }
@@ -204,12 +203,38 @@ select {
 	text-decoration: none;
 }
 
+.class-table {
+	width:740px;
+	margin:auto auto auto auto;
+}
 
+.course-credit-td {
+	font-size: large;
+	font-weight: 300;
+	text-decoration: none;
+}
 
+.course-title-td1 {
+	font-size: large;
+	font-weight: 350;
+	text-decoration: none;
+}
 
+.course-note-td {
+	font-size: medium;
+	font-weight: 300;
+	text-decoration: none;
+}
 
 .large-font {
 	font-size: large;
+}
+
+.paper {
+	padding: 5px 5px;
+	background: #fafafa;
+	border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
 .login-area {
