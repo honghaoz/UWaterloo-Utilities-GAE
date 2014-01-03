@@ -11,9 +11,7 @@
 		</table>
 		<br>
 	</div>
-	<div class="class-table">
-		<span class="choose" style="position: relative; left: 0px;">Choose a class you want to set an Email alert:</span>
-	</div>
+	
 	<br>
 	<div class="paper">
 		<table class="class-table">
@@ -29,49 +27,42 @@
 			{% endif %}
 		</table>
 	</div>
-		{% for class in course.classes %}
 		
-	{% if ((class.enrol_tot / class.enrol_cap) >= 1) %}
-	<a href="/uw-cen/{{course.subject}}-{{course.catalog_num}}-{{class.class_num}}">
-	<img src="/images/alarm-100.png" alt="{{course.subject}}{{course.catalog_num}}-{{class.class_num}}" width="25" height="25" class="alarm-icon"></a>
-	<span class="alarm-text">Set an alert -></span>
-	{% else %}
 	<br>
 	<br>
-	{% endif %}
 	<div class="paper">
 		<table class="class-table">
 			<table>
 				<tr>
-					<td><div style="width: 150px;"><span class="blue">Class Number: </span>{{class.class_num}}</div></td>
-					<td><div style="width: 150px;"><span class="blue">Section: </span>{{class.comp_sec}}</div></td>
-					<td><div style="width: 150px;"><span class="blue">Campus: </span>{{class.camp_loc}}</div></td>
+					<td><div style="width: 150px;"><span class="blue">Class Number: </span>{{theClass.class_num}}</div></td>
+					<td><div style="width: 150px;"><span class="blue">Section: </span>{{theClass.comp_sec}}</div></td>
+					<td><div style="width: 150px;"><span class="blue">Campus: </span>{{theClass.camp_loc}}</div></td>
 				</tr>
 			</table>
 			<table>
 			<tr>
 				<td><span class="blue">Enrolment: </span></td>
-				{% if ((class.enrol_tot / class.enrol_cap) < 0.5) %}
-					<td><span class="green">{{class.enrol_tot}} </span>/ {{class.enrol_cap}} (total / capacity)</td>
-				{% elif ((class.enrol_tot / class.enrol_cap) < 0.75) %}
-					<td><span class="yellow">{{class.enrol_tot}} </span>/ {{class.enrol_cap}} (total / capacity)</td>
-				{% elif ((class.enrol_tot / class.enrol_cap) < 0.85) %}
-					<td><span class="orange">{{class.enrol_tot}} </span>/ {{class.enrol_cap}} (total / capacity)</td>
-				{% elif ((class.enrol_tot / class.enrol_cap) < 0.93) %}
-					<td><span class="red">{{class.enrol_tot}} </span>/ {{class.enrol_cap}} (total / capacity)</td>
+				{% if ((theClass.enrol_tot / theClass.enrol_cap) < 0.5) %}
+					<td><span class="green">{{theClass.enrol_tot}} </span>/ {{theClass.enrol_cap}} (total / capacity)</td>
+				{% elif ((theClass.enrol_tot / theClass.enrol_cap) < 0.75) %}
+					<td><span class="yellow">{{theClass.enrol_tot}} </span>/ {{theClass.enrol_cap}} (total / capacity)</td>
+				{% elif ((theClass.enrol_tot / theClass.enrol_cap) < 0.85) %}
+					<td><span class="orange">{{theClass.enrol_tot}} </span>/ {{theClass.enrol_cap}} (total / capacity)</td>
+				{% elif ((theClass.enrol_tot / theClass.enrol_cap) < 0.93) %}
+					<td><span class="red">{{theClass.enrol_tot}} </span>/ {{theClass.enrol_cap}} (total / capacity)</td>
 				{% else %}
-					<td><span class="more_red">{{class.enrol_tot}} </span>/ {{class.enrol_cap}} (total / capacity)</td>
+					<td><span class="more_red">{{theClass.enrol_tot}} </span>/ {{theClass.enrol_cap}} (total / capacity)</td>
 				{% endif %}
 			</tr>
 			<tr>
 				<td><span class="blue">Waitlist: </span></td>
-				<td>{{class.wait_tot}} / {{class.wait_cap}} (total / capacity)</td>
+				<td>{{theClass.wait_tot}} / {{theClass.wait_cap}} (total / capacity)</td>
 			</tr>
-			{% if noteHasCol10(class.note) %}
+			{% if noteHasCol10(theClass.note) %}
 			<tr>
 				<td><span class="blue">Notes: </span></td>
 				<td>
-			{% for note in class.note %}
+			{% for note in theClass.note %}
 				{% if not note.col10 == None %}
 				<span><i>{{note.col10}}</i></span>
 				&nbsp;&nbsp;&nbsp;
@@ -93,26 +84,26 @@
 				<td align="center"><span class="blue">Instructor</span></td>
 			</tr>
 			<tr>
-				{% if class.time_date == None %}
+				{% if theClass.time_date == None %}
 					<td></td>
 				{% else %}
-					<td>{{class.time_date}}</td>
+					<td>{{theClass.time_date}}</td>
 				{% endif %}
 				
-				{% if class.bldg_room == None %}
+				{% if theClass.bldg_room == None %}
 					<td></td>
 				{% else %}
-					<td align="center">{{class.bldg_room}}</td>
+					<td align="center">{{theClass.bldg_room}}</td>
 				{% endif %}
 				
-				{% if class.instructor == None %}
+				{% if theClass.instructor == None %}
 					<td></td>
 				{% else %}
-					<td align="center">{{class.instructor}}</td>
+					<td align="center">{{theClass.instructor}}</td>
 				{% endif %}
 			</tr>
 			
-			{% for note in class.note %}
+			{% for note in theClass.note %}
 				{% if not note.col6 == None %}
 				<tr>
 					{% if note.time_date == None %}
@@ -144,7 +135,7 @@
 				{% endif %}
 			{% endfor %}
 			
-			{% for note in class.note %}
+			{% for note in theClass.note %}
 				{% if note.col10 == None and note.col6 == None %}
 				<tr>
 					{% if note.time_date == None %}
@@ -170,6 +161,14 @@
 			</table>
 		</table>
 	</div>
-		{% endfor %}
+	<br>
+	<br>
+	<div class="paper">
+	  <form method="post">
+		<span style="position: relative; left:3px; font-size:15px;">Input your Email address to receive alert:</span>
+		<input type="email" name="email" size="25" class="alarm-email-input">
+		<input type="submit" value="Set!" class="alarm-set-input">
+	  </form>
+	</div>
 	
 {% endblock %}

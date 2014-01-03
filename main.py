@@ -39,6 +39,7 @@ import sys
 sys.path.insert(0, 'libs')
 from bs4 import BeautifulSoup
 from collections import OrderedDict
+from google.appengine.api import mail
 
 # Global variables
 template_dir = os.path.join(os.path.dirname(__file__), 'html_template')
@@ -279,6 +280,19 @@ class CourseEnrolmentNotifier(ECEHandle):
                                                            level = level,
                                                            sess = sess,
                                                            subject = subject)
+
+    def render_alert_page(self, theClass, course):
+        global level
+        level = level
+        global sess
+        sess = sess
+        global subject
+        subject = subject
+        self.render('/course-enrol/cen-alarm.html', course = course,
+                                                    theClass = theClass,
+                                                    level = level,
+                                                    sess = sess,
+                                                    subject = subject,)
 
     def get(self):
         scheduleURL = "http://www.adm.uwaterloo.ca/infocour/CIR/SA/%s.html"
@@ -647,18 +661,36 @@ class CourseEnrolmentNotifier(ECEHandle):
             return False
 
 class CEN_class_page(CourseEnrolmentNotifier):
+    def get(self, course_id):
+        try:
+            subject, catalog_num = course_id.split('-')
+            theCourse = Dic_CCourse_get_by_id(subject + '-' + catalog_num)
+            self.render_result_class_page(theCourse)
+        except:
+            self.error(404)
+            self.render_error_page(errors = ["Sorry...", "404 NOT FOUND, this page is not found!"])
+
+class CEN_alert(CourseEnrolmentNotifier):
     def get(self, class_id):
-        subject, catalog_num = class_id.split('-')
-        theCourse = Dic_CCourse_get_by_id(subject + '-' + catalog_num)
-        self.render_result_class_page(theCourse)
-        # try:
-        #     subject, catalog_num = class_id.split('-')
-        #     theCourse = Dic_CCourse_get_by_id(subject + '-' + catalog_num)
-        #     self.render_result_class_page(theCourse)
-        # except:
-        #     self.error(404)
-            # self.render_error_page(errors = ["Sorry...", "404 NOT FOUND, this page is not found!"])
-        
+        try:
+            subject, catalog_num, class_num = class_id.split('-')
+            theCourse = Dic_CCourse_get_by_id(subject + '-' + catalog_num)
+            theClass = Dic_CClass_get_by_id(subject + '-' + catalog_num + '-' + class_num)
+            self.render_alert_page(theClass, theCourse)
+        except:
+            self.error(404)
+            self.render_error_page(errors = ["Sorry...", "404 NOT FOUND, this page is not found!"])
+    def post(self, class_id):
+        email = self.request.get('email')
+        if not mail.is_email_valid(email):
+            self.write("NONONO")
+        else:
+            sender_address = "Example.com Support <support@example.com>"
+            subject = "Confirm your registration"
+            body = """
+Thank you for creating an account! Please confirm your email address by
+clicking on the link below:"""
+            mail.send_mail(sender_address, email, subject, body)
 
 class FlushCourseClass(ECEHandle):
     def render_error_page(self, errors = []):
@@ -667,6 +699,7 @@ class FlushCourseClass(ECEHandle):
         ndb.delete_multi(Course.query().fetch(keys_only=True))
         ndb.delete_multi(Class.query().fetch(keys_only=True))
         self.render_error_page(errors = ["Course & Class Database are flushed successfully!"])
+
 # control = True
 # count = 0        
 # class Test(ECEHandle):
@@ -687,13 +720,14 @@ class FlushCourseClass(ECEHandle):
 #         self.write(count)
 
 # python regex???? to solve it!!!!!!
-classID = r'([A-Z\-]+[a-zA-Z0-9\-]+[0-9]+)'
-courseID = r'([A-Z\-]+[a-zA-Z0-9\-]+)'
+courseID = r'([A-Z]+\-[a-zA-Z0-9]+)'
+classID = r'([A-Z]+\-[a-zA-Z0-9]+\-[0-9]+)'
 app = webapp2.WSGIApplication([
     ('/?', HomePage),
     ('/add-app', AddApp),
     ('/uw-cen/?', CourseEnrolmentNotifier),
     ('/uw-cen/' + courseID, CEN_class_page),
+    ('/uw-cen/' + classID, CEN_alert),
     ('/uw-cen/flush', FlushCourseClass)
     #('/test', Test)
 ], debug=True)

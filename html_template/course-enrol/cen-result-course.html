@@ -12,18 +12,18 @@
 		<br>
 		<span class="choose">Choose the course you want to view:</span>
 		<br>
-		<br>
-		<div class="paper">
-		<br>
-		<table class="course-table">
+		
 		{% for k, course in Dic_CCourse.items() %}
-			<tr>
-				<td><a href="/uw-cen/{{course.subject}}-{{course.catalog_num}}" class="course-num-td">{{course.subject}} {{course.catalog_num}}</a></td>
-				<td class="course-title-td">{{course.title}}</td>
-			</tr>
-		{% endfor %}
-		</table>
 		<br>
+		<a href="/uw-cen/{{course.subject}}-{{course.catalog_num}}" style="text-decoration: none;">
+		<div class="paper">
+		<span class="course-num-td">{{course.subject}} {{course.catalog_num}}</span>
+		&nbsp;&nbsp;
+		<span class="course-title-td">{{course.title}}</span>
 		</div>
+		</a>
+		{% endfor %}
+		
+		<br>
 	</div>
 {% endblock %}

@@ -42,6 +42,10 @@ textarea {
 }
     
 input[type=text] {
+	
+}
+
+.input-text-front {
 	position: relative;
 	top: 6px;
 	border:1px solid #ccc;
@@ -51,26 +55,34 @@ input[type=text] {
 	border-radius: 3px;
 	overflow: hidden;
 	background: #fcfcfc;
+	font-size:medium;
 }
 
-
 input[type=submit] {
+ 
+}
+
+.input-submit-front {
 	font-size: 14px;
 	border:1px solid #ccc;
 	padding:5px 15px; 
 	background: rgba(0,0,0,0.03); 
 	cursor:pointer;
 	-webkit-border-radius: 3px;
-	border-radius: 3px; 
+	border-radius: 3px;
 }
 
 input[type=reset] {
+
+}
+
+.input-reset-front {
 	padding:5px 10px; 
 	border:1px solid #ccc;
 	background: rgba(0,0,0,0.05); 
 	cursor:pointer;
 	-webkit-border-radius: 3px;
-	border-radius: 3px; 
+	border-radius: 3px;
 }
 
 select {
@@ -110,6 +122,43 @@ select {
 	-moz-border-radius-topright: 3px;
 	border-top-left-radius: 3px;
 	border-top-right-radius: 3px;
+}
+
+.alarm-icon {
+	position: relative; 
+	top: 37px; 
+	left: 665px;
+	
+	-webkit-transition-duration: 0.8s;
+    -moz-transition-duration: 0.8s;
+    -o-transition-duration: 0.8s;
+    transition-duration: 0.8s;
+     
+    -webkit-transition-property: -webkit-transform;
+    -moz-transition-property: -moz-transform;
+    -o-transition-property: -o-transform;
+    transition-property: transform;
+     
+    overflow:hidden;
+}
+
+.alarm-icon:hover {
+	position: relative; 
+	top: 37px; 
+	left: 665px;
+	
+	-webkit-transform:rotate(360deg);
+    -moz-transform:rotate(360deg);
+    -o-transform:rotate(360deg);
+}
+
+.alarm-text {
+	position: relative; 
+	top: 31px; 
+	left: 520px;
+	font-size: 18px;
+	font-weight: 350;
+	color: #346bb9;
 }
 
 }
@@ -162,6 +211,27 @@ select {
 .blue {
 	color: #346bb9;
 }
+
+.green {
+	color: #07945f
+}
+
+.yellow {
+	color: #d6bd00
+}
+
+.orange {
+	color: #d58700
+}
+
+.red {
+	color: #d14a00
+}
+
+.more_red {
+	color: #d20000
+}
+
 .course-table-head {
 	width:550px;
 	margin:auto auto auto auto;
@@ -173,14 +243,20 @@ select {
 	width:500px;
 	margin:auto auto auto 30px;
 }
+
 .course-num-td {
+	position: relative;
+	left: 5px;
 	font-size: 20px;
 	font-weight: 300;
 	color: #346bb9;
 	text-decoration: none;
 }
 
+
 .course-num-td:visited {
+	position: relative;
+	left: 5px;
 	font-size: 20px;
 	font-weight: 310;
 	color: #346bb9;
@@ -191,7 +267,8 @@ select {
 	font-size: large;
 	font-weight: 300;
 	position: relative;
-	left: 15px;
+	left: 17px;
+	color: #373737;
 	text-decoration: none;
 }
 
@@ -199,7 +276,8 @@ select {
 	font-size: large;
 	font-weight: 300;
 	position: relative;
-	left: 15px;
+	left: 17px;
+	color: #373737;
 	text-decoration: none;
 }
 
@@ -235,6 +313,30 @@ select {
 	background: #fafafa;
 	border: 1px solid #ccc;
     border-radius: 5px;
+}
+
+.alarm-email-input {
+	position: relative;
+	left: 6px;
+	border:1px solid #ccc;
+	padding: 5px 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: #fcfcfc;
+	font-size:medium;
+}
+
+.alarm-set-input {
+	position: relative;
+	left: 6px;
+	font-size: 15px;
+	border:1px solid #ccc;
+	padding:5px 15px; 
+	background: rgba(0,0,0,0.03); 
+	cursor:pointer;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
 }
 
 .login-area {
