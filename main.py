@@ -367,7 +367,7 @@ class CourseEnrolmentNotifier(ECEHandle):
                                                            sess = sess,
                                                            subject = subject)
 
-    def render_alert_page(self, theClass, course, error = ""):
+    def render_alert_page(self, theClass, course, email, error = ""):
         global level
         level = level
         global sess
@@ -379,6 +379,7 @@ class CourseEnrolmentNotifier(ECEHandle):
                                                     level = level,
                                                     sess = sess,
                                                     subject = subject,
+                                                    email = email,
                                                     error = error)
     def render_alert_showdict_page(self, dic_alert):
         self.render('/course-enrol/cen-alert-dict.html', dic_alert = dic_alert, Alert_runing_switch = Alert_runing_switch)
@@ -785,7 +786,7 @@ class CEN_alert(CourseEnrolmentNotifier):
 
         email = self.request.get('email')
         if not isValidEmailAddress(email):
-            self.render_alert_page(self.theClass, self.theCourse, "Email address is invalid!")
+            self.render_alert_page(self.theClass, self.theCourse, email, "Email address is invalid!")
         else:
             global query_url
             global level_id
@@ -799,6 +800,23 @@ class CEN_alert(CourseEnrolmentNotifier):
             # read query result
             queryResult = self.readQueryResult_Alert(query_url, query_obj, level_id, sess_id, subject, catalog_num, class_num, email)
             if queryResult == True:
+
+                sender_address = "UW Course Enrolment Notifier<uw.course.enrolment.notifier@gmail.com>"
+                mail_subject = "UW-CEN: Alert:%(subject)s %(catalog_num)s %(class_num)s is set successfully!" % {"subject" : subject, "catalog_num" : catalog_num, "class_num" : class_num}
+                mail_body = '''
+                    UW Course Enrolment Notifier:
+
+                    Alert Information:
+                    %(subject)s %(catalog_num)s 
+                    Class Number: %(class_num)s
+
+                    When spot is open, you will receive an email notification!
+                    ----------------------
+                    UW Course Enrolment Notifier
+                    by Honghao Zhang
+                ''' % {"subject" : subject, "catalog_num" : catalog_num, "class_num" : class_num}
+                mail.send_mail(sender_address, email, mail_subject, mail_body)
+
                 logging.info("Add %(subject)s %(catalog_num)s : %(class_num)s [%(email)s] Successfully! Time: %(time)s" % {"subject" : subject, "catalog_num" : catalog_num, "class_num" : class_num, "email" : email, "time" : str(strftime("%Y-%m-%d %H:%M:%S", gmtime()))})
                 self.redirect('/uw-cen/alert/show-dict')
             elif queryResult == 'NO RESULT':
@@ -883,7 +901,7 @@ class CEN_alert(CourseEnrolmentNotifier):
                         alreadyExistAlert.enrol_tot = enrol_tot
                         alreadyExistAlert.email.append(email)
                     else:
-                        self.render_alert_page(self.theClass, self.theCourse, "This Email address is already set for this class")
+                        self.render_alert_page(self.theClass, self.theCourse, email, "This Email address is already set for this class")
                         break
 
 
@@ -920,7 +938,7 @@ class CEN_alert(CourseEnrolmentNotifier):
                                  email = new_email,
                                  queried_time = new_queried_time).put()
                     else:
-                        self.render_alert_page(self.theClass, self.theCourse, "This Email address is already set for this class")
+                        self.render_alert_page(self.theClass, self.theCourse, email, "This Email address is already set for this class")
                         break
                 break
             else:
