@@ -989,9 +989,9 @@ class CEN_alert_run(CEN_alert):
             # read query result
             queryResult = self.readQueryResult_Refresh(query_url, query_obj, alert)
             if queryResult == True:
-                logging.info("Refresh %(subject)s %(catalog_num)s : %(class_num)s Successfully! Time: %(time)s" % {"subject" : subject, "catalog_num" : catalog_num, "class_num" : class_num, "time" : str(strftime("%Y-%m-%d %H:%M:%S", gmtime()))})
+                logging.info("Refresh %(subject)s %(catalog_num)s : %(class_num)s Successfully! Time: %(time)s" % {"subject" : alert.subject, "catalog_num" : alert.catalog_num, "class_num" : alert.class_num, "time" : str(strftime("%Y-%m-%d %H:%M:%S", gmtime()))})
             else:
-                logging.info("Refresh %(subject)s %(catalog_num)s : %(class_num)s Failed! Time: %(time)s" % {"subject" : subject, "catalog_num" : catalog_num, "class_num" : class_num, "time" : str(strftime("%Y-%m-%d %H:%M:%S", gmtime()))})
+                logging.info("Refresh %(subject)s %(catalog_num)s : %(class_num)s Failed! Time: %(time)s" % {"subject" : alert.subject, "catalog_num" : alert.catalog_num, "class_num" : alert.class_num, "time" : str(strftime("%Y-%m-%d %H:%M:%S", gmtime()))})
     def readQueryResult_Refresh(self, query_url, query_obj, alert):
         try:
             query_result = urllib2.urlopen(query_url, query_obj).read()
