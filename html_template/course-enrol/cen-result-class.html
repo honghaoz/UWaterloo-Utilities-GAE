@@ -33,11 +33,14 @@
 		
 	{% if ((class.enrol_tot / class.enrol_cap) >= 1) %}
 	<a href="/uw-cen/{{course.subject}}-{{course.catalog_num}}-{{class.class_num}}">
-	<img src="/images/alarm-100.png" alt="{{course.subject}}{{course.catalog_num}}-{{class.class_num}}" width="25" height="25" class="alarm-icon"></a>
-	<span class="alarm-text">Set an alert -></span>
+	<img src="/images/alarm-100-red.png" alt="{{course.subject}}{{course.catalog_num}}-{{class.class_num}}" width="25" height="25" class="alarm-icon"></a>
+	<span class="alarm-text">Set an Alert -></span>
 	{% else %}
 	<br>
 	<br>
+	<a href="https://quest.pecs.uwaterloo.ca/psp/SS/?cmd=login&languageCd=ENG&" style="text-decoration: none;"  target="_blank">
+	<img src="/images/quest-100-green.png" alt="{{course.subject}}{{course.catalog_num}}-{{class.class_num}}" width="25" height="25" class="alarm-icon"></a>
+	<span class="no-alarm-text">Available to Enrol -></span>
 	{% endif %}
 	<div class="paper">
 		<table class="class-table">

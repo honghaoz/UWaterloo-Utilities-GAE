@@ -17,6 +17,15 @@ footer {
     font-size: small;
 }
 
+.honghaz {
+	color: #6C707B;
+}
+
+.honghaoz:visited {
+	color: #6C707B;
+	text-decoration: none;
+}
+
 label {
   display: block;
   font-size: 20px;
@@ -124,6 +133,24 @@ select {
 	border-top-right-radius: 3px;
 }
 
+.alarm-text {
+	position: relative; 
+	top: 31px; 
+	left: 515px;
+	font-size: 18px;
+	font-weight: 350;
+	color: #9C3333;
+}
+
+.no-alarm-text {
+	position: relative; 
+	top: 31px; 
+	left: 470px;
+	font-size: 18px;
+	font-weight: 350;
+	color: #126105;
+}
+
 .alarm-icon {
 	position: relative; 
 	top: 37px; 
@@ -150,15 +177,6 @@ select {
 	-webkit-transform:rotate(360deg);
     -moz-transform:rotate(360deg);
     -o-transform:rotate(360deg);
-}
-
-.alarm-text {
-	position: relative; 
-	top: 31px; 
-	left: 520px;
-	font-size: 18px;
-	font-weight: 350;
-	color: #346bb9;
 }
 
 }
@@ -213,7 +231,7 @@ select {
 }
 
 .green {
-	color: #07945f
+	color: #126105
 }
 
 .yellow {
@@ -229,7 +247,7 @@ select {
 }
 
 .more_red {
-	color: #d20000
+	color: #9C3333
 }
 
 .course-table-head {

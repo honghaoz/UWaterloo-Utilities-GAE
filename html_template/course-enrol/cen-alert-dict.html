@@ -4,9 +4,9 @@
 	<div class="cen-center">
 	<div class="paper">
 		{% if Alert_runing_switch == True %}
-			<a href="/uw-cen/alert/off"><span>Alert: ON</span></a>
+			<span style="color: #346BB9; font-size: 20px; width:100px; position: relative; left:200px;">Alert: <a href="/uw-cen/alert/off" style="text-decoration: none; color:#126105;">ON</a></span>
 		{% else %}
-			<a href="/uw-cen/alert/on"><span>Alert: OFF</span></a>
+			<span style="color: #346BB9; font-size: 20px; width:100px; position: relative; left:200px;">Alert: <a href="/uw-cen/alert/on" style="text-decoration: none; color:#9C3333;">OFF</a></span>
 		{% endif %}
 	</div>
 		{% for id, alert in dic_alert.items() %}
