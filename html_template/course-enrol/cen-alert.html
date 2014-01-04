@@ -167,7 +167,13 @@
 	  <form method="post">
 		<span style="position: relative; left:3px; font-size:15px;">Input your Email address to receive alert:</span>
 		<input type="email" name="email" size="25" class="alarm-email-input">
+		<input type="text" name="level" hidden="true" value="{{level}}">
+		<input type="text" name="catalog_num" hidden="true" value="{{course.catalog_num}}">
+		<input type="text" name="class_num" hidden="true" value="{{theClass.class_num}}">
 		<input type="submit" value="Set!" class="alarm-set-input">
+		{% if not email == "" %}
+		<div style="width:400px; position: relative; left:290px; font-size:15px; color: #b90000;">{{error}}</div>
+		{% endif %}
 	  </form>
 	</div>
 	

@@ -1,0 +1,25 @@
+{% extends "/course-enrol/cen-base.html" %}
+
+{% block content_cen %}
+	<div class="cen-center">
+	<div class="paper">
+		{% if Alert_runing_switch == True %}
+			<a href="/uw-cen/alert/off"><span>Alert: ON</span></a>
+		{% else %}
+			<a href="/uw-cen/alert/on"><span>Alert: OFF</span></a>
+		{% endif %}
+	</div>
+		{% for id, alert in dic_alert.items() %}
+		<br>
+		<br>
+			<div class="paper">
+				<span>{{alert.level}} {{alert.sess}} {{alert.subject}} {{alert.catalog_num}} {{alert.class_num}}  {{alert.enrol_tot}} / {{alert.enrol_cap}}</span>
+				<br>
+				{% for email in alert.email %}
+					<br>
+					<span>{{email}}</span>
+				{% endfor %}
+			</div>
+		{% endfor %}
+	</div>
+{% endblock %}

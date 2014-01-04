@@ -9,3 +9,19 @@ indexes:
 # manually, move them above the marker line.  The index.yaml file is
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
+
+- kind: DB_Alert
+  properties:
+  - name: catalog_num
+  - name: class_num
+  - name: subject
+  - name: queried_time
+    direction: desc
+
+- kind: DB_Alert
+  properties:
+  - name: subject
+  - name: catalog_num
+  - name: class_num
+  - name: queried_time
+    direction: desc
