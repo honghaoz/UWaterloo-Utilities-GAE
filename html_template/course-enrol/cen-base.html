@@ -8,6 +8,9 @@
   <body>
     <div>   
 		<a href="/uw-cen" class="main-title">UW Course Enrolment Notifier</a>
+		<div class="cen-login-area">
+		  {{user_area | safe}}
+		</div>
 		{% block content_cen %}
 		{% endblock %}
     </div>

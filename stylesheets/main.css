@@ -19,10 +19,26 @@ footer {
 
 .honghaz {
 	color: #6C707B;
+	
+	-webkit-transition: color 0.4s ease;  
+    -moz-transition: color 0.4s ease;  
+    -o-transition: color 0.4s ease;  
+    -ms-transition: color 0.4s ease;  
+    transition: color 0.4s ease;
+}
+
+.honghaz:hover {
+	color: #ff8d00;
+	
+	-webkit-transition: color 0.4s ease;  
+    -moz-transition: color 0.4s ease;  
+    -o-transition: color 0.4s ease;  
+    -ms-transition: color 0.4s ease;  
+    transition: color 0.4s ease;
 }
 
 .honghaoz:visited {
-	color: #6C707B;
+	color: #346BB9;
 	text-decoration: none;
 }
 
@@ -65,6 +81,50 @@ input[type=text] {
 	overflow: hidden;
 	background: #fcfcfc;
 	font-size:medium;
+	
+	-webkit-transition: width 0.4s ease;  
+    -moz-transition: width 0.4s ease;  
+    -o-transition: width 0.4s ease;  
+    -ms-transition: width 0.4s ease;  
+    transition: width 0.4s ease;
+    
+    -webkit-transition: background 0.4s ease;  
+    -moz-transition: background 0.4s ease;  
+    -o-transition: background 0.4s ease;  
+    -ms-transition: background 0.4s ease;  
+    transition: background 0.4s ease;
+}
+
+.input-text-front:hover {
+	position: relative;
+	top: 6px;
+	border:1px solid #9E9D9D;
+	padding: 7px 3px;
+	width: 170px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: rgba(194,229,255,0.29);
+	font-size:medium;
+	
+	-webkit-transition: width 0.4s ease;  
+    -moz-transition: width 0.4s ease;  
+    -o-transition: width 0.4s ease;  
+    -ms-transition: width 0.4s ease;  
+    transition: width 0.4s ease;
+}
+
+.input-text-front:active {
+	position: relative;
+	top: 6px;
+	border:1px solid #9E9D9D;
+	padding: 7px 3px;
+	width: 170px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: #fcfcfc;
+	font-size:medium;
 }
 
 input[type=submit] {
@@ -79,10 +139,38 @@ input[type=submit] {
 	cursor:pointer;
 	-webkit-border-radius: 3px;
 	border-radius: 3px;
+	
+	-webkit-transition: background 0.4s ease;  
+    -moz-transition: background 0.4s ease;  
+    -o-transition: background 0.4s ease;  
+    -ms-transition: background 0.4s ease;  
+    transition: background 0.4s ease;  
 }
 
-input[type=reset] {
+.input-submit-front:hover {
+	font-size: 14px;
+	border:1px solid #9e9d9d;
+	padding:5px 15px; 
+	background: rgba(194,229,255,0.29); 
+	cursor:pointer;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	
+	-webkit-transition: background 0.4s ease;  
+    -moz-transition: background 0.4s ease;  
+    -o-transition: background 0.4s ease;  
+    -ms-transition: background 0.4s ease;  
+    transition: background 0.4s ease;  
+}
 
+.input-submit-front:active {
+	font-size: 14px;
+	border:1px solid #d9d9d9;
+	padding:5px 15px; 
+	background: rgba(255,255,255,0.31); 
+	cursor:pointer;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
 }
 
 .input-reset-front {
@@ -92,7 +180,38 @@ input[type=reset] {
 	cursor:pointer;
 	-webkit-border-radius: 3px;
 	border-radius: 3px;
+	
+	-webkit-transition: background 0.4s ease;  
+    -moz-transition: background 0.4s ease;  
+    -o-transition: background 0.4s ease;  
+    -ms-transition: background 0.4s ease;  
+    transition: background 0.4s ease;  
 }
+
+.input-reset-front:hover {
+	padding:5px 10px; 
+	border:1px solid #9E9D9D;
+	background: rgba(255,194,194,0.29); 
+	cursor:pointer;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	
+	-webkit-transition: background 0.4s ease;  
+    -moz-transition: background 0.4s ease;  
+    -o-transition: background 0.4s ease;  
+    -ms-transition: background 0.4s ease;  
+    transition: background 0.4s ease;  
+}
+
+.input-reset-front:active {
+	padding:5px 10px; 
+	border:1px solid #D9D9D9;
+	background: rgba(255,255,255,0.31); 
+	cursor:pointer;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+}
+
 
 select {
 	font-size: 15px;
@@ -102,6 +221,38 @@ select {
 .main-title {
     display: block;
     color: #346bb9;
+    font-size: 39px;
+    font-weight: 300;
+    text-align: center;
+    margin-bottom: 30px;
+    text-decoration: none;
+    
+    -webkit-transition: color .4s linear;  
+    -moz-transition: color .4s linear;  
+    -o-transition: color .4s linear;  
+    -ms-transition: color .4s linear;  
+    transition: color .4s linear;  
+}
+
+.main-title:hover {
+    display: block;
+    color: #00ddff;
+    font-size: 39px;
+    font-weight: 300;
+    text-align: center;
+    margin-bottom: 30px;
+    text-decoration: none;
+    
+    -webkit-transition: color .4s linear;  
+    -moz-transition: color .4s linear;  
+    -o-transition: color .4s linear;  
+    -ms-transition: color .4s linear;  
+    transition: color .4s linear; 
+}
+
+.main-title:active {
+    display: block;
+    color: #ffea00;
     font-size: 39px;
     font-weight: 300;
     text-align: center;
@@ -140,12 +291,42 @@ select {
 	font-size: 18px;
 	font-weight: 350;
 	color: #9C3333;
+	
+	-webkit-transition: left .2s linear;  
+    -moz-transition: left .2s linear;  
+    -o-transition: left .2s linear;  
+    -ms-transition: left .2s linear;  
+    transition: left .2s linear;  
+}
+
+.alarm-text:hover {
+	position: relative; 
+	top: 31px; 
+	left: 520px;
+	font-size: 18px;
+	font-weight: 350;
+	color: #9C3333;
 }
 
 .no-alarm-text {
 	position: relative; 
 	top: 31px; 
 	left: 470px;
+	font-size: 18px;
+	font-weight: 350;
+	color: #126105;
+	
+	-webkit-transition: left .2s linear;  
+    -moz-transition: left .2s linear;  
+    -o-transition: left .2s linear;  
+    -ms-transition: left .2s linear;  
+    transition: left .2s linear;  
+}
+
+.no-alarm-text:hover {
+	position: relative; 
+	top: 31px; 
+	left: 475px;
 	font-size: 18px;
 	font-weight: 350;
 	color: #126105;
@@ -209,6 +390,30 @@ select {
     border-radius: 3px;
     overflow: hidden;
     background: #fcfcfc url("data:image/png;base64,R0lGODlhDwAUAIABAAAAAP///yH5BAEAAAEALAAAAAAPABQAAAIXjI+py+0Po5wH2HsXzmw//lHiSJZmUAAAOw==") no-repeat 92% 50%;
+    
+    -webkit-transition: background 0.4s ease;  
+    -moz-transition: background 0.4s ease;  
+    -o-transition: background 0.4s ease;  
+    -ms-transition: background 0.4s ease;  
+    transition: background 0.4s ease;
+    
+    -webkit-transition: width 0.4s ease;  
+    -moz-transition: width 0.4s ease;  
+    -o-transition: width 0.4s ease;  
+    -ms-transition: width 0.4s ease;  
+    transition: width 0.4s ease;
+    
+}
+
+.select-style:hover {
+	position: relative;
+	top: 6px;
+	padding: 3px 3px;
+    border: 1px solid #9E9D9D;
+    width: 170px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: rgba(194,229,255,0.29) url("data:image/png;base64,R0lGODlhDwAUAIABAAAAAP///yH5BAEAAAEALAAAAAAPABQAAAIXjI+py+0Po5wH2HsXzmw//lHiSJZmUAAAOw==") no-repeat 92% 50%;
 }
 
 .select-style select {
@@ -331,6 +536,32 @@ select {
 	background: #fafafa;
 	border: 1px solid #ccc;
     border-radius: 5px;
+    
+    -webkit-transition: padding 0.7s ease;  
+    -moz-transition: padding 0.7s ease;  
+    -o-transition: padding 0.7s ease;  
+    -ms-transition: padding 0.7s ease;  
+    transition: padding 0.7s ease;  
+}
+
+.paper:hover {
+	padding: 10px 5px;
+	background: #ffffff;
+	border: 1px solid #bdbdbd;
+    border-radius: 5px;
+    
+    -webkit-transition: padding 0.4s ease;  
+    -moz-transition: padding 0.4s ease;  
+    -o-transition: padding 0.4s ease;  
+    -ms-transition: padding 0.4s ease;  
+    transition: padding 0.4s ease; 
+}
+
+.paper:active {
+	padding: 10px 10px;
+	background: #ffffff;
+	border: 1px solid #a9a9a9;
+    border-radius: 5px;
 }
 
 .alarm-email-input {
@@ -342,6 +573,24 @@ select {
 	border-radius: 3px;
 	overflow: hidden;
 	background: #fcfcfc;
+	font-size:medium;
+	
+	-webkit-transition: background 0.4s ease;  
+    -moz-transition: background 0.4s ease;  
+    -o-transition: background 0.4s ease;  
+    -ms-transition: background 0.4s ease;  
+    transition: background 0.4s ease;
+}
+
+.alarm-email-input:hover {
+	position: relative;
+	left: 6px;
+	border:1px solid #ccc;
+	padding: 5px 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: rgba(194,229,255,0.29);
 	font-size:medium;
 }
 
@@ -355,32 +604,120 @@ select {
 	cursor:pointer;
 	-webkit-border-radius: 3px;
 	border-radius: 3px;
+	
+	-webkit-transition: background 0.4s ease;  
+    -moz-transition: background 0.4s ease;  
+    -o-transition: background 0.4s ease;  
+    -ms-transition: background 0.4s ease;  
+    transition: background 0.4s ease;
 }
 
-.login-area {
+.alarm-set-input:hover {
+	position: relative;
+	left: 6px;
+	font-size: 15px;
+	border:1px solid #9E9D9D;
+	padding:5px 15px; 
+	background: rgba(52,108,186,0.14); 
+	cursor:pointer;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	
+	-webkit-transition: background 0.4s ease;  
+    -moz-transition: background 0.4s ease;  
+    -o-transition: background 0.4s ease;  
+    -ms-transition: background 0.4s ease;  
+    transition: background 0.4s ease; 
+}
+
+.alarm-set-input:active {
+	position: relative;
+	left: 6px;
+	font-size: 15px;
+	border:1px solid #D9D9D9;
+	padding:5px 15px; 
+	background: rgba(255,255,255,0.31); 
+	cursor:pointer;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+}
+
+.front-login-area {
     font-size: 13px;
     color: gray;
     position: absolute;
     top: 10px;
     right: 10px;
+    width: 170px;
+}
+
+.cen-login-area {
+    font-size: 13px;
+    color: gray;
+    position: absolute;
+    top: 10px;
+    right: -70px;
+    width: 170px;
+}
+
+.sub-login-area {
+	position: relative;
+	top: 6px;
+    right: 20px;
 }
 
 .login-link {
+	position: relative;
+	left: 10px;
+	width: 147px;
+	height: 30px;
+    display:block;  
+    background: url('/images/google-png/White-signin_Long_base_20dp.png') center top no-repeat;  
+}
+
+.login-link:hover {
+	position: relative;
+	left: 10px;
+	width: 147px;
+	height: 30px;
+    display:block;  
+    background: url('/images/google-png/White-signin_Long_hover_20dp.png') top right no-repeat;  
+}
+
+.login-link:active {
+	position: relative;
+	left: 10px;
+	width: 147px;
+	height: 30px;
+    display:block;  
+    background: url('/images/google-png/White-signin_Long_press_20dp.png') top right no-repeat;  
+}
+
+.logout-link {
     color: gray;
     text-decoration: none;
 }
 
-.login-link:visited {
+.logout-link:visited {
     color: gray;
 }
 
-.login-link:hover {
+.logout-link:hover {
     text-decoration: underline;
 }
 
-.error {
-    color: red;
+.user {
+	color: gray;
+	font-weight: 500;
+	font-size: 13px;
+	text-align: right;
 }
+
+.user-signout {
+	font-size: 12px;
+	text-align: right;
+}
+
 
 .post + .post {
     margin-top: 15px;
@@ -433,10 +770,6 @@ select {
     right: 0px;
     color: gray;
     font-size: 12px;
-}
-.user {
-	color: #346bb9;
-	font-size: 17px;
 }
 
 .return {

@@ -1,5 +1,5 @@
 cron:
 - description: query every one hour
-  url: /uw-cen/alert
+  url: /uw-cen/alert/run
   schedule: every 20 minutes from 7:00 to 21:00
   timezone: Canada/Eastern

@@ -41,6 +41,7 @@ from bs4 import BeautifulSoup
 from collections import OrderedDict
 from google.appengine.api import mail
 from time import gmtime, strftime, localtime
+from google.appengine.api import users
 
 # Global variables
 template_dir = os.path.join(os.path.dirname(__file__), 'html_template')
@@ -261,15 +262,28 @@ class ECEHandle(webapp2.RequestHandler):
     def logout(self):
         self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
 
+    # google user
+    user_area = ""
+    def process_user_area(self):
+        user = users.get_current_user()
+        if user:
+            self.user_area = ('<div class="sub-login-area"><div class="user"><a href="https://www.google.com/settings/personalinfo?ref=home" class="logout-link" target="_blank">%s</a></div><div class="user-signout">(<a href="%s" class="logout-link">Sign out</a>)</div></div>' %
+                             (user.email(), users.create_logout_url(self.request.url)))
+        else:
+            self.user_area = ('<a href="%s" class="login-link"></a>' %
+                             users.create_login_url(self.request.url))
+
 # Handlers
 class HomePage(ECEHandle):
     def get(self):
+        self.process_user_area()
         apps = ndb.gql("SELECT * FROM Apps")
-        self.render('homepage.html', apps = apps)
+        self.render('homepage.html', apps = apps, user_area = self.user_area)
 class AddApp(ECEHandle):
     referer = ""
     def render_page(self):
-        self.render('add-apps-form.html', referer = self.referer)
+        self.process_user_area()
+        self.render('add-apps-form.html', referer = self.referer, user_area = self.user_area)
     def post(self):
         name = self.request.get('name')
         link = self.request.get('link')
@@ -316,7 +330,7 @@ def isValidEmailAddress(email):
     else:
         return False
 
-Alert_runing_switch = False
+Alert_runing_switch = True
 
 # global functions can be called in jinja2 templates
 # produce true if the note of a class has col10 != None
@@ -339,12 +353,16 @@ class CourseEnrolmentNotifier(ECEHandle):
     subject_values = []
 
     def render_front_page(self, sess_values = "", term_dic = "", subject_values = ""):
-        self.render('/course-enrol/cen-front.html', sess_values = sess_values, term_dic = term_dic, subject_values = subject_values)
+        self.process_user_area()
+        self.render('/course-enrol/cen-front.html', sess_values = sess_values, term_dic = term_dic, subject_values = subject_values, user_area = self.user_area)
 
     def render_error_page(self, errors = []):
-        self.render('/course-enrol/cen-error.html', errors = errors)
+        self.process_user_area()
+        self.render('/course-enrol/cen-error.html', errors = errors, user_area = self.user_area)
 
     def render_result_course_page(self, Dic_CCourse):
+        self.process_user_area()
+
         global level
         level = level
         global sess
@@ -354,8 +372,11 @@ class CourseEnrolmentNotifier(ECEHandle):
         self.render('/course-enrol/cen-result-course.html', level = level,
                                                             sess = sess,
                                                             subject = subject,
-                                                            Dic_CCourse = Dic_CCourse)
+                                                            Dic_CCourse = Dic_CCourse,
+                                                            user_area = self.user_area)
     def render_result_class_page(self, course):
+        self.process_user_area()
+
         global level
         level = level
         global sess
@@ -365,9 +386,12 @@ class CourseEnrolmentNotifier(ECEHandle):
         self.render('/course-enrol/cen-result-class.html', course = course,
                                                            level = level,
                                                            sess = sess,
-                                                           subject = subject)
+                                                           subject = subject,
+                                                           user_area = self.user_area)
 
     def render_alert_page(self, theClass, course, email, error = ""):
+        self.process_user_area()
+
         global level
         level = level
         global sess
@@ -380,9 +404,11 @@ class CourseEnrolmentNotifier(ECEHandle):
                                                     sess = sess,
                                                     subject = subject,
                                                     email = email,
-                                                    error = error)
+                                                    error = error,
+                                                    user_area = self.user_area)
     def render_alert_showdict_page(self, dic_alert):
-        self.render('/course-enrol/cen-alert-dict.html', dic_alert = dic_alert, Alert_runing_switch = Alert_runing_switch)
+        self.process_user_area()
+        self.render('/course-enrol/cen-alert-dict.html', dic_alert = dic_alert, Alert_runing_switch = Alert_runing_switch, user_area = self.user_area)
 
     def get(self):
         scheduleURL = "http://www.adm.uwaterloo.ca/infocour/CIR/SA/%s.html"
@@ -676,7 +702,7 @@ class CourseEnrolmentNotifier(ECEHandle):
 
     def readCourses(self, table):
         subject = None
-        catalog_num = None
+        catalog_num = 'NULL'
         units = None
         title = None
         note = None
@@ -689,10 +715,39 @@ class CourseEnrolmentNotifier(ECEHandle):
                 row += 1
                 continue
             # course head row
+            elif len(list(tr.children)) == 7 and str(tr.get_text().strip().split()[0]) == str(self.subject):
+                # #clear old data
+                # subject = None
+                # catalog_num = 'NULL'
+                # units = None
+                # title = None
+                # # set new data
+                # try:
+                #     subject = str(tr.contents[0].string.strip())
+                # except:
+                #     subject = None
+                # try:
+                #     catalog_num = str(tr.contents[2].string.strip())
+                #     if catalog_num == "":
+                #         catalog_num = 'NULL'
+                # except:
+                #     catalog_num = 'NULL'
+                # try:
+                #     units = float(tr.contents[3].string.strip())
+                # except:
+                #     units = None
+                # try:
+                #     title = str(tr.contents[5].string.strip())
+                # except:
+                #     title = None
+
+                #if catalog num == "", no need to read this entry!
+                row += 6
+                continue
             elif len(list(tr.children)) == 8 and str(tr.get_text().strip().split()[0]) == str(self.subject):
                 #clear old data
                 subject = None
-                catalog_num = None
+                catalog_num = 'NULL'
                 units = None
                 title = None
                 # set new data
@@ -702,8 +757,10 @@ class CourseEnrolmentNotifier(ECEHandle):
                     subject = None
                 try:
                     catalog_num = str(tr.contents[2].string.strip())
+                    if catalog_num == "":
+                        catalog_num = 'NULL'
                 except:
-                    catalog_num = None
+                    catalog_num = 'NULL'
                 try:
                     units = float(tr.contents[4].string.strip())
                 except:
@@ -713,6 +770,7 @@ class CourseEnrolmentNotifier(ECEHandle):
                 except:
                     title = None
                 row += 1
+                continue
             elif len(list(tr.children)) == 1 and (not tr.get_text().strip() == u'') and tr.get_text().strip().split()[0] == u'Notes:':
                 note = None
                 try:
@@ -720,6 +778,7 @@ class CourseEnrolmentNotifier(ECEHandle):
                 except:
                     note = None
                 row += 1
+                continue
             elif len(list(tr.children)) == 2 and (not tr.table == None):
                 if note:
                     Dic_CCourse_put(subject + "-" + str(catalog_num), CCourse(subject, catalog_num, units, title, note))
@@ -798,6 +857,9 @@ class CEN_alert(CourseEnrolmentNotifier):
             query_dic['cournum'] = catalog_num
             query_obj = urllib.urlencode(query_dic)
             # read query result
+            # if Dic_Alert is empty, means new instance is running, copy db to dic_alert
+            if not Dic_Alert:
+                self.copy_db2dict()
             queryResult = self.readQueryResult_Alert(query_url, query_obj, level_id, sess_id, subject, catalog_num, class_num, email)
             if queryResult == True:
 
@@ -968,7 +1030,8 @@ class CEN_alert_run(CEN_alert):
     def get(self):
         global Alert_runing_switch
         if Alert_runing_switch:
-            self.copy_db2dict()
+            if not Dic_Alert:
+                self.copy_db2dict()
             self.refreshDB()
             for id, alert in Dic_Alert.items():
                 if alert.isAvailable():

@@ -1,5 +1,5 @@
 application: uw-app
-version: 1-7-email
+version: 1-7-1-prettify
 runtime: python27
 api_version: 1
 threadsafe: yes
