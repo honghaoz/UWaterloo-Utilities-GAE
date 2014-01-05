@@ -9,6 +9,8 @@ body {
     padding: 10px;
     color: #333;
     background-color: #F3F3F4;
+    background-image: url('/images/bg.png');
+	background-attachment: fixed;
 }
 
 footer {
@@ -292,12 +294,19 @@ select {
 	font-weight: 350;
 	color: #9C3333;
 	
+	/*-webkit-animation: hit 1s;*/
+	
 	-webkit-transition: left .2s linear;  
     -moz-transition: left .2s linear;  
     -o-transition: left .2s linear;  
     -ms-transition: left .2s linear;  
-    transition: left .2s linear;  
+    transition: left .2s linear;      
 }
+
+@-webkit-keyframes hit {  
+   22% { left: 50px; }
+   100% { left: 515px; }   
+} 
 
 .alarm-text:hover {
 	position: relative; 
