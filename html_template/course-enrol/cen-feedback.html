@@ -1,0 +1,62 @@
+{% extends "/course-enrol/cen-base.html" %}
+
+{% block content_cen %}
+	<div class="cen-center">
+		<form method="post">
+			<table>
+				<tr>
+				  <td><div style="width: 82px; font-size:15px;">Your Name:</div></td>
+				  <td>
+				    <input type="text" name="name" value="{{name}}" class="input-text-feedback">
+				    <span style="font-size:15px; color:red;">*</span>
+				  </td>
+				</tr>
+				{% if not name_error == "" %}
+				<tr>
+					<td>
+					</td>
+					<td><span style="font-size:15px; color:red;">{{name_error}}</span></td>
+				</tr>
+				{% endif %}
+				<tr>
+				  <td><div style="width: 82px; font-size:15px;">Your Email:</div></td>
+				  <td>
+				    <input type="email" name="email" value="{{email}}" class="input-text-feedback">
+				    <span style="font-size:12px; "><i>*Option</i></span>
+				  </td>
+				</tr>
+				{% if not email_error == "" %}
+				<tr>
+					<td>
+					</td>
+					<td><span style="font-size:15px; color:red;">{{email_error}}</span></td>
+				</tr>
+				{% endif %}
+			</table>
+			<br>
+			<table>
+				<tr>
+				  <td valign="top"><div style="width: 80px; font-size:15px;">Feedback:</div></td>
+				  <td>
+				  {% if feedback == 'Please give me some suggestions!'%}
+				  	<textarea name="feedback" cols="30" rows="10" class="input-textarea" style="color: gray;" onfocus="if(this.value == 'Please give me some suggestions!') { this.value = ''; this.style=''; }">{{feedback}}</textarea>
+				  {% else %}
+				      <textarea name="feedback" cols="30" rows="10" class="input-textarea" onfocus="if(this.value == 'Please give me some suggestions!') { this.value = ''; }">{{feedback}}</textarea>
+				  {% endif %}
+				  </td>
+				</tr>
+				{% if not feedback_error == "" %}
+				<tr>
+					<td>
+					</td>
+					<td><span style="font-size:15px; color:red;">{{feedback_error}}</span></td>
+				</tr>
+				{% endif %}
+			</table>
+			<input type="hidden" name="referer" value="{{referer}}">
+			<input type="submit" value="Send" class="input-submit-front" style="position: relative;
+			left:215px;">
+		</form>
+		
+	</div>
+{% endblock %}

@@ -3,7 +3,7 @@
   <head>
     <title>UWaterloo Course Notifier</title>
     <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
-    <meta http-equiv="refresh" content="3;url=/uw-cen">
+    <meta http-equiv="refresh" content="2; url={{referer_url}}">
   </head>
   
   <body>
@@ -20,11 +20,9 @@
 
 	<div class="cen-center">
 		<br>
-		{% for error in errors %}
-			<h2 align="center">{{error}}</h2>
-		{% endfor %}
+			<div align="center" class="choose">Thanks for your feedback!</div>
 		<br>
-		<h2 align="center"><a href='/uw-cen'>Return</a></h2>
+		
 	</div>
 	</div>
     <br>

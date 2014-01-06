@@ -60,13 +60,6 @@ input[type=text] {
     font-family: monospace;
     */
 }
-
-textarea {
-  width: 500px;
-  height: 400px;
-  font-size: 17px;
-  font-family: monospace;
-}
     
 input[type=text] {
 	
@@ -122,6 +115,108 @@ input[type=text] {
 	border:1px solid #9E9D9D;
 	padding: 7px 3px;
 	width: 170px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: #fcfcfc;
+	font-size:medium;
+}
+
+
+.input-text-feedback {
+	position: relative;
+	top: 6px;
+	border:1px solid #ccc;
+	padding: 7px 3px;
+	width: 200px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: #fcfcfc;
+	font-size:medium;
+	
+	-webkit-transition: width 0.4s ease;  
+    -moz-transition: width 0.4s ease;  
+    -o-transition: width 0.4s ease;  
+    -ms-transition: width 0.4s ease;  
+    transition: width 0.4s ease;
+    
+    -webkit-transition: background 0.4s ease;  
+    -moz-transition: background 0.4s ease;  
+    -o-transition: background 0.4s ease;  
+    -ms-transition: background 0.4s ease;  
+    transition: background 0.4s ease;
+}
+
+.input-text-feedback:hover {
+	position: relative;
+	top: 6px;
+	border:1px solid #9E9D9D;
+	padding: 7px 3px;
+	width: 230px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: rgba(194,229,255,0.29);
+	font-size:medium;
+	
+	-webkit-transition: width 0.4s ease;  
+    -moz-transition: width 0.4s ease;  
+    -o-transition: width 0.4s ease;  
+    -ms-transition: width 0.4s ease;  
+    transition: width 0.4s ease;
+}
+
+.input-text-feedback:active {
+	position: relative;
+	top: 6px;
+	border:1px solid #9E9D9D;
+	padding: 7px 3px;
+	width: 230px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: #fcfcfc;
+	font-size:medium;
+}
+
+
+.input-textarea {
+	position: relative;
+	top: 6px;
+	border:1px solid #ccc;
+	padding: 5px 5px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: #fcfcfc;
+	font-size:medium;
+    
+    -webkit-transition: background 0.4s ease;  
+    -moz-transition: background 0.4s ease;  
+    -o-transition: background 0.4s ease;  
+    -ms-transition: background 0.4s ease;  
+    transition: background 0.4s ease;
+}
+
+.input-textarea:hover {
+	position: relative;
+	top: 6px;
+	border:1px solid #9E9D9D;
+	padding: 5px 5px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: rgba(194,229,255,0.29);
+	font-size:medium;
+	
+}
+
+.input-textarea:active {
+	position: relative;
+	top: 6px;
+	border:1px solid #9E9D9D;
+	padding: 5px 5px;
 	-webkit-border-radius: 3px;
 	border-radius: 3px;
 	overflow: hidden;
@@ -260,6 +355,54 @@ select {
     text-align: center;
     margin-bottom: 30px;
     text-decoration: none;
+}
+
+.banner {
+    display: block;
+    color: #346bb9;
+    font-size: 15px;
+    font-weight: 310;
+    text-decoration: none;
+    width: 30px;
+    position: relative;
+    left: 575px;
+    bottom: 80px;
+    
+    -webkit-transition: color .4s linear;  
+    -moz-transition: color .4s linear;  
+    -o-transition: color .4s linear;  
+    -ms-transition: color .4s linear;  
+    transition: color .4s linear;  
+}
+
+.banner:hover {
+    display: block;
+    color: #346bb9;
+    font-size: 15px;
+    font-weight: 310;
+    text-decoration: none;
+    width: 30px;
+    position: relative;
+    left: 575px;
+    bottom: 80px;
+    
+    -webkit-transition: color .4s linear;  
+    -moz-transition: color .4s linear;  
+    -o-transition: color .4s linear;  
+    -ms-transition: color .4s linear;  
+    transition: color .4s linear;
+}
+
+.banner:active {
+    display: block;
+    color: #346bb9;
+    font-size: 15px;
+    font-weight: 310;
+    text-decoration: none;
+    width: 30px;
+    position: relative;
+    left: 575px;
+    bottom: 80px;
 }
 
 .sub-title {
@@ -712,6 +855,19 @@ select {
 }
 
 .logout-link:hover {
+    text-decoration: underline;
+}
+
+.manage {
+    color: #346BB9;
+    text-decoration: none;
+}
+
+.manage:visited {
+    color: #346BB9;
+}
+
+.manage:hover {
     text-decoration: underline;
 }
 

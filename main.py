@@ -105,6 +105,11 @@ class Email_BlackList(ndb.Model):
     email_black = ndb.StringProperty(required = True)
     redirect_link = ndb.TextProperty(required = True)
 
+class FeedBack(ndb.Model):
+    name = ndb.StringProperty(required = True)
+    email = ndb.StringProperty(required = True)
+    feedback = ndb.TextProperty(required = True)
+
 # data structures
 class CClass_TBI:
     col6 = None
@@ -228,20 +233,28 @@ class Alert:
             return False
     def sendEmail(self):
         sender_address = "UWaterloo Course Notifier<uw.course.enrolment.notifier@gmail.com>"
-        subject = "UW-Courese Notifier: %(subject)s %(catalog_num)s %(class_num)s is available!" % {"subject" : self.subject, "catalog_num" : self.catalog_num, "class_num" : self.class_num}
+        email_subject = "UW-Courese Notifier: %(subject)s %(catalog_num)s %(class_num)s is available!" % {"subject" : self.subject, "catalog_num" : self.catalog_num, "class_num" : self.class_num}
         body = '''
             UWaterloo Course Notifier:
             %(subject)s %(catalog_num)s 
             Class Number: %(class_num)s is now available!
+            Current Enrolment:  %(enrol_tot)s / %(enrol_cap)s (total / capacity)
 
             Go QUEST and add it Now!
 
             ----------------------
             UWaterloo Course Notifier
             by Honghao Zhang
-        ''' % {"subject" : self.subject, "catalog_num" : self.catalog_num, "class_num" : self.class_num}
+        ''' % {"subject" : self.subject, 
+               "catalog_num" : self.catalog_num, 
+               "class_num" : self.class_num, 
+               "enrol_tot" : self.enrol_tot, 
+               "enrol_cap" : self.enrol_cap}
+               # Last query time: %(time)s
+               # "time" : str(strftime("%Y-%m-%d %H:%M:%S", localtime()))
         for email in self.email:
-            mail.send_mail(sender_address, email, subject, body)
+            mail.send_mail(sender_address, email, email_subject, body)
+            logging.info("Send %(subject)s %(catalog_num)s : %(class_num)s (%(enrol_tot)s / %(enrol_cap)s) [%(email)s] Successfully! Time: %(time)s" % {"subject" : self.subject, "catalog_num" : self.catalog_num, "class_num" : self.class_num, "enrol_tot" : self.enrol_tot, "enrol_cap" : self.enrol_cap, "email" : email, "time" : str(strftime("%Y-%m-%d %H:%M:%S", gmtime()))})
 
 Dic_Alert = OrderedDict()
 def Dic_Alert_get_by_id(id):
@@ -307,11 +320,54 @@ class ECEHandle(webapp2.RequestHandler):
     def process_user_area(self):
         user = users.get_current_user()
         if user:
-            self.user_area = ('<div class="sub-login-area"><div class="user"><a href="https://www.google.com/settings/personalinfo?ref=home" class="logout-link" target="_blank">%s</a></div><div class="user-signout">(<a href="%s" class="logout-link">Sign out</a>)</div></div>' %
-                             (user.email(), users.create_logout_url(self.request.url)))
+            self.user_area = ('''<div class="sub-login-area">
+                                    <div class="user">
+                                        <a href="https://www.google.com/settings/personalinfo?ref=home" class="logout-link" target="_blank">
+                                        %s
+                                        </a>
+                                    </div>
+                                    <div class="user-signout">(<a href="%s" class="logout-link">Sign out</a>)</div>
+                                    <br>
+                                    <div class="user">
+                                        <a href="/uw-cen/user=%s" class="manage">
+                                        Manage your Alerts
+                                        </a>
+                                    </div>
+                                    <div class="user">
+                                        <a href="/uw-cen/user=public" class="manage">
+                                        Check Public Alerts
+                                        </a>
+                                    </div>
+                                    <br>
+                                    <div class="user">
+                                        <a href="/uw-cen/feedback" class="manage">
+                                        Give me a feedback
+                                        </a>
+                                    </div>
+                                </div>''' %
+                             (user.email(), users.create_logout_url(self.request.url), user.email()))
+            return user.email()
         else:
-            self.user_area = ('<a href="%s" class="login-link"></a>' %
+            self.user_area = ('''<a href="%s" class="login-link"></a>
+                                 <div class="sub-login-area">
+                                 <div class="user">
+                                    <div style="font-size: 11px;"><i>Login to manage your alerts!</i></div>
+                                 </div>
+                                    <div class="user">
+                                    <br>
+                                    <a href="/uw-cen/user=public" class="manage">
+                                        Check Public Alerts
+                                    </a>
+                                    </div>
+                                 <br>
+                                    <div class="user">
+                                        <a href="/uw-cen/feedback" class="manage">
+                                        Give me a feedback
+                                        </a>
+                                    </div>
+                                 </div>''' %
                              users.create_login_url(self.request.url))
+            return "public"
     def get_user_email(self):
         user = users.get_current_user()
         if user:
@@ -429,6 +485,9 @@ class CourseEnrolmentNotifier(ECEHandle):
     sess_values = []
     subject_values = []
 
+    #used for redirect to origin url
+    referer = ""
+
     # used for separating different uses' query data
     def get_query_id_from_cookie(self):
         query_id = self.read_secure_cookie("query_id")
@@ -476,8 +535,8 @@ class CourseEnrolmentNotifier(ECEHandle):
                                                            subject = subject,
                                                            user_area = self.user_area)
 
-    def render_alert_page(self, theClass, course, email, error = ""):
-        self.process_user_area()
+    def render_alert_page(self, theClass, course, email, tips = "", error = ""):
+        user_email = self.process_user_area()
 
         global level
         level = level
@@ -491,12 +550,23 @@ class CourseEnrolmentNotifier(ECEHandle):
                                                     sess = sess,
                                                     subject = subject,
                                                     email = email,
+                                                    tips = tips,
                                                     error = error,
+                                                    user_email = user_email,
                                                     user_area = self.user_area)
     def render_alert_showdict_page(self, dic_alert):
         self.process_user_area()
         self.render('/course-enrol/cen-alert-dict.html', dic_alert = dic_alert, Alert_runing_switch = Alert_runing_switch, user_area = self.user_area)
 
+    def render_user_manage_page(self, user_email, dic_alert):
+        self.process_user_area()
+        self.render('/course-enrol/cen-user-manage.html', user_email = user_email, dic_alert = dic_alert, user_area = self.user_area)
+
+    def render_feedback_page(self, name = "", name_error = "", email = "", email_error = "", feedback = "", feedback_error = "", referer = ""):
+        user_email = self.process_user_area()
+        self.render('/course-enrol/cen-feedback.html', name = name, name_error = name_error, email = user_email if (email == "" and not user_email == 'public') else email, email_error = email_error, feedback = feedback, feedback_error = feedback_error, referer = referer, user_email = user_email, user_area = self.user_area)
+    def render_feedback_thanks_page(self, referer_url):
+        self.render('/course-enrol/cen-feedback-thanks.html' , referer_url = referer_url, user_area = self.user_area)
     def get(self):
        if not self.is_in_black_list():
             # used for separate different users query result
@@ -934,9 +1004,9 @@ class CEN_alert(CourseEnrolmentNotifier):
             self.theClass = Dic_CClass_get_by_id(query_id, subject + '-' + catalog_num + '-' + class_num)
             user = users.get_current_user()
             if user:
-                self.render_alert_page(self.theClass, self.theCourse, user.email(), "")
+                self.render_alert_page(self.theClass, self.theCourse, user.email(), "*Login is recommonded, <br>otherwise, alert information will be visible to others and cannot manage your alerts!", "")
             else:
-                self.render_alert_page(self.theClass, self.theCourse, "", "*Login is recommonded, <br>otherwise, alert information will be visible to others and cannot manage your alerts!")
+                self.render_alert_page(self.theClass, self.theCourse, "", "*Login is recommonded, <br>otherwise, alert information will be visible to others and cannot manage your alerts!", "")
         except:
             self.error(404)
             self.render_error_page(errors = ["Sorry...", "404 NOT FOUND, this page is not found!"])
@@ -952,7 +1022,7 @@ class CEN_alert(CourseEnrolmentNotifier):
         email = self.request.get('email')
         logging.info("POST: Email: %s" % email)
         if not isValidEmailAddress(email):
-            self.render_alert_page(self.theClass, self.theCourse, email, "Email address is invalid!")
+            self.render_alert_page(self.theClass, self.theCourse, email, "*Login is recommonded, <br>otherwise, alert information will be visible to others and cannot manage your alerts!", "Email address is invalid!")
         else:
             global query_url
             global level_id
@@ -967,13 +1037,13 @@ class CEN_alert(CourseEnrolmentNotifier):
             # if Dic_Alert is empty, means new instance is running, copy db to dic_alert
             if not Dic_Alert:
                 self.copy_db2dict()
-            user_name = 'None'
+            user_name = 'public'
             user = users.get_current_user()
             if user:
                 user_name = user.email()
             queryResult = self.readQueryResult_Alert(query_url, query_obj, level_id, sess_id, subject, catalog_num, class_num, email, user_name)
             if queryResult == "EMAIL_EXISIT":
-                self.render_alert_page(self.theClass, self.theCourse, email, "This Email address is already set for this class")
+                self.render_alert_page(self.theClass, self.theCourse, email, "*Login is recommonded, <br>otherwise, alert information will be visible to others and cannot manage your alerts!", "This Email address is already set for this class")
             elif queryResult == True:
                 sender_address = "UWaterloo Course Notifier <uw.course.enrolment.notifier@gmail.com>"
                 mail_subject = "UW-Course Notifier: Alert:%(subject)s %(catalog_num)s %(class_num)s is set successfully!" % {"subject" : subject, "catalog_num" : catalog_num, "class_num" : class_num}
@@ -992,7 +1062,7 @@ class CEN_alert(CourseEnrolmentNotifier):
                 mail.send_mail(sender_address, email, mail_subject, mail_body)
 
                 logging.info("Add %(subject)s %(catalog_num)s : %(class_num)s [%(email)s] Successfully! Time: %(time)s" % {"subject" : subject, "catalog_num" : catalog_num, "class_num" : class_num, "email" : email, "time" : str(strftime("%Y-%m-%d %H:%M:%S", gmtime()))})
-                self.redirect('/uw-cen/alert/show-dict')
+                self.redirect('/uw-cen/user=%s' % user_name)
             elif queryResult == 'NO RESULT':
                 pass
             else:
@@ -1175,10 +1245,10 @@ class CEN_alert_run(CEN_alert):
             self.refreshDB()
             for id, alert in Dic_Alert.items():
                 if alert.isAvailable():
-                    logging.info(alert.subject + alert.catalog_num + ":"+ alert.class_num + " is available! Time: %s" % str(strftime("%Y-%m-%d %H:%M:%S", gmtime())))
+                    logging.info(alert.subject + alert.catalog_num + ":"+ alert.class_num + " is available!!! Time: %s" % str(strftime("%Y-%m-%d %H:%M:%S", gmtime())))
                     alert.sendEmail()
                 else:
-                    logging.info(alert.subject + alert.catalog_num + ":"+ alert.class_num + " is not available! Time: %s" % str(strftime("%Y-%m-%d %H:%M:%S", gmtime())))
+                    logging.info(alert.subject + alert.catalog_num + ":"+ alert.class_num + " is not available... Time: %s" % str(strftime("%Y-%m-%d %H:%M:%S", gmtime())))
 
     def refreshDB(self):
         global query_url
@@ -1279,6 +1349,13 @@ class CEN_alert_run(CEN_alert):
                 continue
         return True
 
+class CEN_alert_manage(CEN_alert):
+    def get(self, email):
+        self.render_user_manage_page(email, Dic_Alert)
+    def post(self):
+        pass
+        
+
 class CEN_alert_showditc(CEN_alert):
     def get(self):
         self.render_alert_showdict_page(Dic_Alert)
@@ -1300,6 +1377,43 @@ class CEN_alert_off(CEN_alert):
         Alert_runing_switch = False
         self.redirect('/uw-cen/alert/show-dict')
 
+class CEN_feedback(CEN_alert):
+    def get(self):
+        # initialize referer, keep the origin referer
+        if not self.request.referer == self.request.url:
+            self.referer = self.request.referer
+        else: 
+            self.referer = self.referer
+        self.render_feedback_page(feedback = "Please give me some suggestions!", referer = self.referer)
+    def post(self):
+        pass
+        name = self.request.get('name')
+        email = self.request.get('email')
+        feedback = self.request.get('feedback')
+        referer_url = self.request.get('referer')
+
+        name_error = ""
+        email_error = ""
+        feedback_error = ""
+
+        if name == "":
+            name_error = "Name cannot be empty"
+        if not (email == "" or isValidEmailAddress(email)):
+            email_error = "Email address is invalid!"
+        if feedback == "":
+            feedback_error = "Please leave at least one word..."
+
+        if not (name_error == "" and email_error == "" and feedback_error == ""):
+            self.render_feedback_page(name = name,
+                                      name_error = name_error, 
+                                      email = email,
+                                      email_error = email_error, 
+                                      feedback = feedback,
+                                      feedback_error = feedback_error,
+                                      referer = referer_url)
+        else:
+            FeedBack(name = name, email = email, feedback = feedback).put()
+            self.render_feedback_thanks_page(referer_url)
 
 class FlushCourseClass(ECEHandle):
     def render_error_page(self, errors = []):
@@ -1314,6 +1428,7 @@ class FlushCourseClass(ECEHandle):
 
 courseID = r'([A-Z]+\-[a-zA-Z0-9]+)'
 classID = r'([A-Z]+\-[a-zA-Z0-9]+\-[0-9]+)'
+EMAIL = r'([\w-]+@[\w-]+\.+[\w-]+)'
 app = webapp2.WSGIApplication([
     ('/?', HomePage),
     ('/add-app', AddApp),
@@ -1321,6 +1436,9 @@ app = webapp2.WSGIApplication([
     ('/uw-cen/?', CourseEnrolmentNotifier),
     ('/uw-cen/' + courseID, CEN_class_page),
     ('/uw-cen/' + classID, CEN_alert),
+    ('/uw-cen/feedback', CEN_feedback),
+    ('/uw-cen/user=([a-z]{6})/?', CEN_alert_manage),
+    ('/uw-cen/user=%s/?' % EMAIL, CEN_alert_manage),
     ('/uw-cen/alert/run', CEN_alert_run),
     ('/uw-cen/alert/show-dict', CEN_alert_showditc),
     ('/uw-cen/alert/copy-db2dict', CEN_alert_copy_db2dict),
