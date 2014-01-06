@@ -19,6 +19,21 @@
 					<br>
 					<span>{{email}}</span>
 				{% endfor %}
+				
+				<br>
+				<br>
+				<br>
+				
+				{% for user, emaillist in alert.user_email.items() %}
+					<br>
+					<span><b>{{user}}</b></span>
+					<br>
+					{% for email in emaillist %}
+						<br>
+						<span>{{email}}</span>
+					{% endfor %}
+					<br>
+				{% endfor %}
 			</div>
 		{% endfor %}
 	</div>

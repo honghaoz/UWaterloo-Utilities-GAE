@@ -43,6 +43,8 @@ from google.appengine.api import mail
 from time import gmtime, strftime, localtime
 from google.appengine.api import users
 
+import datetime
+
 # Global variables
 template_dir = os.path.join(os.path.dirname(__file__), 'html_template')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape = True)
@@ -97,6 +99,12 @@ class DB_Alert(ndb.Model):
 
     queried_time = ndb.IntegerProperty(required = True)
 
+    user_email = ndb.JsonProperty(required = True)
+
+class Email_BlackList(ndb.Model):
+    email_black = ndb.StringProperty(required = True)
+    redirect_link = ndb.TextProperty(required = True)
+
 # data structures
 class CClass_TBI:
     col6 = None
@@ -139,16 +147,30 @@ class CClass:
         self.instructor = instructor
         self.note = note
 
-Dic_CClass = OrderedDict()
-def Dic_CClass_get_by_id(id):
-    global Dic_CClass
-    if id in Dic_CClass:
-        return Dic_CClass[id]
+List_Dic_CClass = {} # used for storing different users' query data
+#Dic_CClass = OrderedDict()
+def Dic_CClass_get_by_id(query_id ,id):
+    global List_Dic_CClass
+    D_CClass = List_Dic_CClass[query_id]
+    if id in D_CClass:
+        return D_CClass[id]
     else:
         return None
-def Dic_CClass_put(id, CClass_instance):
-    global Dic_CClass
-    Dic_CClass[id] = CClass_instance
+def Dic_CClass_put(query_id, id, CClass_instance):
+    global List_Dic_CClass
+    if query_id in List_Dic_CClass:
+        D_CClass =  List_Dic_CClass[query_id]
+    else:
+        D_CClass = OrderedDict()
+        List_Dic_CClass[query_id] = D_CClass
+    D_CClass[id] = CClass_instance
+    
+def Dic_CClass_clear(query_id):
+    global List_Dic_CClass
+    try:
+        List_Dic_CClass[query_id].clear()
+    except:
+        pass
 
 class CCourse:
     def __init__(self, subject = None, catalog_num = None, units = None, title = None, note = None):
@@ -160,21 +182,35 @@ class CCourse:
         self.classes = []
         self.created_time = time.localtime()
 
-Dic_CCourse = OrderedDict()
-def Dic_CCourse_get_by_id(id):
-    global Dic_CCourse
-    if id in Dic_CCourse:
-        return Dic_CCourse[id]
+List_Dic_CCourse = {} # used for storing different users' query data
+#Dic_CCourse = OrderedDict()
+def Dic_CCourse_get_by_id(query_id, id):
+    global List_Dic_CCourse
+    D_CCourse = List_Dic_CCourse[query_id]
+    if id in D_CCourse:
+        return D_CCourse[id]
     else:
         return None
-def Dic_CCourse_put(id, CCourse_instance):
-    global Dic_CCourse
-    Dic_CCourse[id] = CCourse_instance
+def Dic_CCourse_put(query_id, id, CCourse_instance):
+    global List_Dic_CCourse
+    if query_id in List_Dic_CCourse:
+        D_CCourse =  List_Dic_CCourse[query_id]
+    else:
+        D_CCourse = OrderedDict()
+        List_Dic_CCourse[query_id] = D_CCourse
+    D_CCourse[id] = CCourse_instance
+
+def Dic_CCourse_clear(query_id):
+    global List_Dic_CCourse
+    try:
+        List_Dic_CCourse[query_id].clear()
+    except:
+        pass
 
 class Alert:
     def __init__(self, level = None, sess = None, subject = None, catalog_num = None,
                        class_num = None, enrol_cap = None, enrol_tot = None,
-                       email = []):
+                       email = [], user_email = {}):
         self.level = level
         self.sess = sess
         self.subject = subject
@@ -183,6 +219,7 @@ class Alert:
         self.enrol_cap = enrol_cap
         self.enrol_tot = enrol_tot
         self.email = email
+        self.user_email = user_email
 
     def isAvailable(self):
         if self.enrol_tot < self.enrol_cap:
@@ -190,17 +227,17 @@ class Alert:
         else:
             return False
     def sendEmail(self):
-        sender_address = "UW Course Enrolment Notifier<uw.course.enrolment.notifier@gmail.com>"
-        subject = "UW-CEN: %(subject)s %(catalog_num)s %(class_num)s is available!" % {"subject" : self.subject, "catalog_num" : self.catalog_num, "class_num" : self.class_num}
+        sender_address = "UWaterloo Course Notifier<uw.course.enrolment.notifier@gmail.com>"
+        subject = "UW-Courese Notifier: %(subject)s %(catalog_num)s %(class_num)s is available!" % {"subject" : self.subject, "catalog_num" : self.catalog_num, "class_num" : self.class_num}
         body = '''
-            UW Course Enrolment Notifier:
+            UWaterloo Course Notifier:
             %(subject)s %(catalog_num)s 
             Class Number: %(class_num)s is now available!
 
             Go QUEST and add it Now!
 
             ----------------------
-            UW Course Enrolment Notifier
+            UWaterloo Course Notifier
             by Honghao Zhang
         ''' % {"subject" : self.subject, "catalog_num" : self.catalog_num, "class_num" : self.class_num}
         for email in self.email:
@@ -243,9 +280,12 @@ class ECEHandle(webapp2.RequestHandler):
         if h == self.make_secure_val(val):
             return val
 
-    def set_secure_cookie(self, name, val):
+    def set_secure_cookie(self, name, val, path):
         cookie_val = self.make_secure_val(val)
-        self.response.headers.add_header('Set-Cookie', '%s=%s; Path=/' % (name, cookie_val))
+        # set expires data is 1 hour later
+        expires_date = datetime.datetime.now() + datetime.timedelta(minutes = 20)
+        expires = expires_date.strftime('%a, %d %b %Y %H:%M:%S GMT')
+        self.response.headers.add_header('Set-Cookie', '%s=%s; Path=%s; expires=%s' % (name, cookie_val, path, expires))
 
     def read_secure_cookie(self, name):
         cookie_val = self.request.cookies.get(name)
@@ -256,7 +296,7 @@ class ECEHandle(webapp2.RequestHandler):
 
     ## login means set the cookie
     def login(self, user):
-        self.set_secure_cookie('user_id', str(user.key().id()))
+        self.set_secure_cookie('user_id', str(user.key().id()), "/")
 
     ## logout means clear the cookie
     def logout(self):
@@ -272,13 +312,32 @@ class ECEHandle(webapp2.RequestHandler):
         else:
             self.user_area = ('<a href="%s" class="login-link"></a>' %
                              users.create_login_url(self.request.url))
+    def get_user_email(self):
+        user = users.get_current_user()
+        if user:
+            return "<%s>" % user.email()
+        else:
+            return "<Not Login>"
+    def is_in_black_list(self):
+        current_email = self.get_user_email()[1:-1]
+        logging.info(current_email)
+        if not current_email == "<Not Login>":
+            theBlack = Email_BlackList.query(Email_BlackList.email_black == current_email).get()
+            if theBlack:
+                self.redirect('https://www.google.ca/webhp?q=shabby')
+                return True
+            else:
+                return False
+        else:
+            return False
 
 # Handlers
 class HomePage(ECEHandle):
     def get(self):
-        self.process_user_area()
-        apps = ndb.gql("SELECT * FROM Apps")
-        self.render('homepage.html', apps = apps, user_area = self.user_area)
+        if not self.is_in_black_list():
+            self.process_user_area()
+            apps = ndb.gql("SELECT * FROM Apps")
+            self.render('homepage.html', apps = apps, user_area = self.user_area)
 class AddApp(ECEHandle):
     referer = ""
     def render_page(self):
@@ -289,10 +348,28 @@ class AddApp(ECEHandle):
         link = self.request.get('link')
         description = self.request.get('description')
 
-        Apps(key_name = name, 
+        Apps(id = name, 
              name = name, 
              link = link,
              description = description).put()
+        self.redirect(str(self.referer))
+    def get(self):
+        # initialize referer, keep the origin referer
+        if not self.request.referer == self.request.url:
+            self.referer = self.request.referer
+        else: 
+            self.referer = self.referer
+        self.render_page()
+
+class AddBlack(ECEHandle):
+    referer = ""
+    def render_page(self):
+        self.process_user_area()
+        self.render('add-black-form.html', referer = self.referer, user_area = self.user_area)
+    def post(self):
+        email_black = self.request.get('email_black')
+        redirect_link = self.request.get("redirect_link")
+        Email_BlackList(id = email_black, email_black = str(email_black), redirect_link = str(redirect_link)).put()
         self.redirect(str(self.referer))
     def get(self):
         # initialize referer, keep the origin referer
@@ -351,6 +428,16 @@ class CourseEnrolmentNotifier(ECEHandle):
     term_dic = {}
     sess_values = []
     subject_values = []
+
+    # used for separating different uses' query data
+    def get_query_id_from_cookie(self):
+        query_id = self.read_secure_cookie("query_id")
+        if query_id == None:
+            query_id = len(List_Dic_CCourse)
+            self.set_secure_cookie("query_id", str(query_id) ,"/uw-cen")
+        else:
+            query_id = int(query_id)
+        return query_id
 
     def render_front_page(self, sess_values = "", term_dic = "", subject_values = ""):
         self.process_user_area()
@@ -411,14 +498,21 @@ class CourseEnrolmentNotifier(ECEHandle):
         self.render('/course-enrol/cen-alert-dict.html', dic_alert = dic_alert, Alert_runing_switch = Alert_runing_switch, user_area = self.user_area)
 
     def get(self):
-        scheduleURL = "http://www.adm.uwaterloo.ca/infocour/CIR/SA/%s.html"
-        graduateSampleURL = scheduleURL % "grad"
-        if self.readQueryFrontPage(graduateSampleURL):
-            self.render_front_page(self.sess_values, self.term_dic, self.subject_values)
-        else:
-            self.render_error_page(errors = ["Sorry...", "Query Page is not available,", "Please try again later!", "Thanks!"])
+       if not self.is_in_black_list():
+            # used for separate different users query result
+            List_Dic_CCourse[time.time()] = None # used for add 1 to length of List_Dic_CCourse
+            query_id = self.get_query_id_from_cookie()
+            logging.info(self.get_user_email() + " Query sequence: " + str(query_id))
+            scheduleURL = "http://www.adm.uwaterloo.ca/infocour/CIR/SA/%s.html"
+            graduateSampleURL = scheduleURL % "grad"
+            if self.readQueryFrontPage(graduateSampleURL):
+                self.render_front_page(self.sess_values, self.term_dic, self.subject_values)
+            else:
+                self.render_error_page(errors = ["Sorry...", "Query Page is not available,", "Please try again later!", "Thanks!"])
 
     def post(self):
+        # used for separate different users query result
+        query_id = self.get_query_id_from_cookie()
         global query_url
         # produce query_object
         self.level = self.request.get('level')
@@ -449,9 +543,10 @@ class CourseEnrolmentNotifier(ECEHandle):
         query_dic['cournum'] = self.cournum
         query_obj = urllib.urlencode(query_dic)
         # read query result
-        queryResult = self.readQueryResult(query_url, query_obj)
+        queryResult = self.readQueryResult(query_url, query_obj, query_id)
         if queryResult == True:
-            self.render_result_course_page(Dic_CCourse)
+            global List_Dic_CCourse
+            self.render_result_course_page(List_Dic_CCourse[query_id])
         elif queryResult == 'NO RESULT':
             pass
         else:
@@ -514,7 +609,7 @@ class CourseEnrolmentNotifier(ECEHandle):
         else:
             return False
 
-    def readClasses(self, table, id, subject, catalog_num):
+    def readClasses(self, table, id, subject, catalog_num, query_id):
         class_num = None
         comp_sec = None
         camp_loc = None
@@ -541,7 +636,7 @@ class CourseEnrolmentNotifier(ECEHandle):
                 continue
             elif 9 < len(list(tr.children)) <= 13:
                 if tr.contents[0].get_text().strip() == u'':
-                    c = Dic_CClass_get_by_id(id + "-" + str(class_num))
+                    c = Dic_CClass_get_by_id(query_id, id + "-" + str(class_num))
                     # extra lines of additional information for previous class
                     # include: colspan = 6 : Reserve
                     #          colspan = 10 : Held With
@@ -657,12 +752,12 @@ class CourseEnrolmentNotifier(ECEHandle):
                                    bldg_room,
                                    instructor,
                                    [])
-                Dic_CClass_put(id + "-" + str(class_num), newCClass)
-                Dic_CCourse_get_by_id(id).classes.append(newCClass)
+                Dic_CClass_put(query_id, id + "-" + str(class_num), newCClass)
+                Dic_CCourse_get_by_id(query_id, id).classes.append(newCClass)
                 row += 1
             # need revise
             elif len(list(tr.children)) < 9 and (not tr.i == None):
-                c = Dic_CClass_get_by_id(id + "-" + str(class_num))
+                c = Dic_CClass_get_by_id(query_id, id + "-" + str(class_num))
                 col6 = None
                 enrol_cap = None
                 enrol_tot = None
@@ -700,7 +795,7 @@ class CourseEnrolmentNotifier(ECEHandle):
                 continue
         return True
 
-    def readCourses(self, table):
+    def readCourses(self, table, query_id):
         subject = None
         catalog_num = 'NULL'
         units = None
@@ -781,10 +876,10 @@ class CourseEnrolmentNotifier(ECEHandle):
                 continue
             elif len(list(tr.children)) == 2 and (not tr.table == None):
                 if note:
-                    Dic_CCourse_put(subject + "-" + str(catalog_num), CCourse(subject, catalog_num, units, title, note))
+                    Dic_CCourse_put(query_id, subject + "-" + str(catalog_num), CCourse(subject, catalog_num, units, title, note))
                 else:
-                    Dic_CCourse_put(subject + "-" + str(catalog_num), CCourse(subject, catalog_num, units, title))
-                if self.readClasses(tr.table, subject + "-" + str(catalog_num), subject, catalog_num):
+                    Dic_CCourse_put(query_id, subject + "-" + str(catalog_num), CCourse(subject, catalog_num, units, title))
+                if self.readClasses(tr.table, subject + "-" + str(catalog_num), subject, catalog_num, query_id):
                     row += 1
                     continue
                 else:
@@ -794,18 +889,18 @@ class CourseEnrolmentNotifier(ECEHandle):
                 continue
         return True
 
-    def readQueryResult(self, query_url, query_obj):
+    def readQueryResult(self, query_url, query_obj, query_id):
         try:
             query_result = urllib2.urlopen(query_url, query_obj).read()
         except urllib2.URLError:
             return 'URL ERROR'
         if query_result:
-            Dic_CCourse.clear()
-            Dic_CClass.clear()
+            Dic_CCourse_clear(query_id)
+            Dic_CClass_clear(query_id)
             soup = BeautifulSoup(query_result)
             table = soup.table
             if table:
-                if self.readCourses(table):
+                if self.readCourses(table, query_id):
                     return True
                 else:
                     return 'TABLE ERROR'
@@ -817,9 +912,11 @@ class CourseEnrolmentNotifier(ECEHandle):
 
 class CEN_class_page(CourseEnrolmentNotifier):
     def get(self, course_id):
+        # used for separate different users query result
+        query_id = self.get_query_id_from_cookie()
         try:
             subject, catalog_num = course_id.split('-')
-            theCourse = Dic_CCourse_get_by_id(subject + '-' + catalog_num)
+            theCourse = Dic_CCourse_get_by_id(query_id, subject + '-' + catalog_num)
             self.render_result_class_page(theCourse)
         except:
             self.error(404)
@@ -829,21 +926,31 @@ class CEN_alert(CourseEnrolmentNotifier):
     theCourse = None
     theClass = None
     def get(self, class_id):
+        # used for separate different users query result
+        query_id = self.get_query_id_from_cookie()
         try:
             subject, catalog_num, class_num = class_id.split('-')
-            self.theCourse = Dic_CCourse_get_by_id(subject + '-' + catalog_num)
-            self.theClass = Dic_CClass_get_by_id(subject + '-' + catalog_num + '-' + class_num)
-            self.render_alert_page(self.theClass, self.theCourse, "")
+            self.theCourse = Dic_CCourse_get_by_id(query_id, subject + '-' + catalog_num)
+            self.theClass = Dic_CClass_get_by_id(query_id, subject + '-' + catalog_num + '-' + class_num)
+            user = users.get_current_user()
+            if user:
+                self.render_alert_page(self.theClass, self.theCourse, user.email(), "")
+            else:
+                self.render_alert_page(self.theClass, self.theCourse, "", "*Login is recommonded, <br>otherwise, alert information will be visible to others and cannot manage your alerts!")
         except:
             self.error(404)
             self.render_error_page(errors = ["Sorry...", "404 NOT FOUND, this page is not found!"])
 
     def post(self, class_id):
+        # used for separate different users query result
+        query_id = self.get_query_id_from_cookie()
+
         subject, catalog_num, class_num = class_id.split('-')
-        self.theCourse = Dic_CCourse_get_by_id(subject + '-' + catalog_num)
-        self.theClass = Dic_CClass_get_by_id(subject + '-' + catalog_num + '-' + class_num)
+        self.theCourse = Dic_CCourse_get_by_id(query_id, subject + '-' + catalog_num)
+        self.theClass = Dic_CClass_get_by_id(query_id, subject + '-' + catalog_num + '-' + class_num)
 
         email = self.request.get('email')
+        logging.info("POST: Email: %s" % email)
         if not isValidEmailAddress(email):
             self.render_alert_page(self.theClass, self.theCourse, email, "Email address is invalid!")
         else:
@@ -860,13 +967,18 @@ class CEN_alert(CourseEnrolmentNotifier):
             # if Dic_Alert is empty, means new instance is running, copy db to dic_alert
             if not Dic_Alert:
                 self.copy_db2dict()
-            queryResult = self.readQueryResult_Alert(query_url, query_obj, level_id, sess_id, subject, catalog_num, class_num, email)
-            if queryResult == True:
-
-                sender_address = "UW Course Enrolment Notifier<uw.course.enrolment.notifier@gmail.com>"
-                mail_subject = "UW-CEN: Alert:%(subject)s %(catalog_num)s %(class_num)s is set successfully!" % {"subject" : subject, "catalog_num" : catalog_num, "class_num" : class_num}
+            user_name = 'None'
+            user = users.get_current_user()
+            if user:
+                user_name = user.email()
+            queryResult = self.readQueryResult_Alert(query_url, query_obj, level_id, sess_id, subject, catalog_num, class_num, email, user_name)
+            if queryResult == "EMAIL_EXISIT":
+                self.render_alert_page(self.theClass, self.theCourse, email, "This Email address is already set for this class")
+            elif queryResult == True:
+                sender_address = "UWaterloo Course Notifier <uw.course.enrolment.notifier@gmail.com>"
+                mail_subject = "UW-Course Notifier: Alert:%(subject)s %(catalog_num)s %(class_num)s is set successfully!" % {"subject" : subject, "catalog_num" : catalog_num, "class_num" : class_num}
                 mail_body = '''
-                    UW Course Enrolment Notifier:
+                    UWaterloo Course Notifier:
 
                     Alert Information:
                     %(subject)s %(catalog_num)s 
@@ -874,7 +986,7 @@ class CEN_alert(CourseEnrolmentNotifier):
 
                     When spot is open, you will receive an email notification!
                     ----------------------
-                    UW Course Enrolment Notifier
+                    UWaterloo Course Notifier
                     by Honghao Zhang
                 ''' % {"subject" : subject, "catalog_num" : catalog_num, "class_num" : class_num}
                 mail.send_mail(sender_address, email, mail_subject, mail_body)
@@ -886,7 +998,7 @@ class CEN_alert(CourseEnrolmentNotifier):
             else:
                 self.render_error_page(errors = ["Sorry...", "Query Response Time Out!", "Please try again later..."])
 
-    def readQueryResult_Alert(self, query_url, query_obj, level_id, sess_id, subject, catalog_num, class_num, email):
+    def readQueryResult_Alert(self, query_url, query_obj, level_id, sess_id, subject, catalog_num, class_num, email, user_name):
         try:
             query_result = urllib2.urlopen(query_url, query_obj).read()
         except urllib2.URLError:
@@ -895,7 +1007,10 @@ class CEN_alert(CourseEnrolmentNotifier):
             soup = BeautifulSoup(query_result)
             table = soup.table
             if table:
-                if self.readCourses_Alert(table, level_id, sess_id, subject, catalog_num, class_num, email):
+                readCourse_result = self.readCourses_Alert(table, level_id, sess_id, subject, catalog_num, class_num, email, user_name)
+                if readCourse_result == "EMAIL_EXISIT":
+                    return "EMAIL_EXISIT"
+                elif readCourse_result == True:
                     return True
                 else:
                     return 'TABLE ERROR'
@@ -904,7 +1019,7 @@ class CEN_alert(CourseEnrolmentNotifier):
         else:
             return False
 
-    def readCourses_Alert(self, table, level_id, sess_id, subject, catalog_num, class_num, email):
+    def readCourses_Alert(self, table, level_id, sess_id, subject, catalog_num, class_num, email, user_name):
         lenOfChildren = len(list(table.children))
         row = 0
         while row < lenOfChildren:
@@ -913,7 +1028,10 @@ class CEN_alert(CourseEnrolmentNotifier):
                 row += 1
                 continue
             elif len(list(tr.children)) == 2 and (not tr.table == None):
-                if self.readClasses_Alert(tr.table, subject + "-" + str(catalog_num), level_id, sess_id, subject, catalog_num, class_num, email):
+                readClass_result = self.readClasses_Alert(tr.table, subject + "-" + str(catalog_num), level_id, sess_id, subject, catalog_num, class_num, email, user_name)
+                if readClass_result == "EMAIL_EXISIT":
+                    return "EMAIL_EXISIT"
+                elif readClass_result == True:
                     row += 1
                     continue
                 else:
@@ -923,7 +1041,7 @@ class CEN_alert(CourseEnrolmentNotifier):
                 continue
         return True
 
-    def readClasses_Alert(self, table, id, level_id, sess_id, subject, catalog_num, class_num, email):
+    def readClasses_Alert(self, table, id, level_id, sess_id, subject, catalog_num, class_num, email, user_name):
         enrol_cap = None
         enrol_tot = None
         lenOfChildren = len(list(table.children))
@@ -955,17 +1073,22 @@ class CEN_alert(CourseEnrolmentNotifier):
                                  class_num,
                                  enrol_cap, 
                                  enrol_tot,
-                                 [email])
+                                 [email],
+                                 {user_name : [email]})
                     Dic_Alert_put(id + "-" + str(class_num), newAlert)
                 else:
                     if not email in alreadyExistAlert.email:
                         alreadyExistAlert.enrol_cap = enrol_cap
                         alreadyExistAlert.enrol_tot = enrol_tot
                         alreadyExistAlert.email.append(email)
+                        if user_name in alreadyExistAlert.user_email:
+                            old_user_email = alreadyExistAlert.user_email[user_name]
+                            old_user_email.append(email)
+                        else:
+                            alreadyExistAlert.user_email[user_name] = [email]
                     else:
-                        self.render_alert_page(self.theClass, self.theCourse, email, "This Email address is already set for this class")
+                        return "EMAIL_EXISIT"
                         break
-
 
                 # add new DB_Alert to Database
                 alreadyExistDB_Alert = DB_Alert.query(DB_Alert.subject == subject, 
@@ -982,12 +1105,26 @@ class CEN_alert(CourseEnrolmentNotifier):
                              enrol_cap = enrol_cap,
                              enrol_tot = enrol_tot,
                              email = [email],
+                             user_email = {user_name : [email]},
                              queried_time = queried_time).put()
                 else:
                     new_email = copy.copy(alreadyExistDB_Alert.email)
                     if not email in new_email:
                         new_email.append(email)
                         new_queried_time = alreadyExistDB_Alert.queried_time + 1
+                        new_user_email = copy.copy(alreadyExistDB_Alert.user_email) #{u'zhh358': [u'1@1.com']}
+                        if user_name in new_user_email:
+                            # user already exist
+                            # get the old email list of this user
+                            new_user_email_list = new_user_email[user_name]
+                            # make the new email list
+                            new_user_email_list.append(email)
+                            # change the dict, let the value of this user is new email list
+                            new_user_email[user_name] = new_user_email_list
+                        else:
+                            # user dosen't exist
+                            # simply add new key to dict
+                            new_user_email[user_name] = [email]
 
                         DB_Alert(id = id + "-" + str(class_num) + "-" + str(new_queried_time),
                                  level = level_id,
@@ -998,9 +1135,11 @@ class CEN_alert(CourseEnrolmentNotifier):
                                  enrol_cap = enrol_cap,
                                  enrol_tot = enrol_tot,
                                  email = new_email,
+                                 # let new dict to user_email
+                                 user_email = new_user_email,
                                  queried_time = new_queried_time).put()
                     else:
-                        self.render_alert_page(self.theClass, self.theCourse, email, "This Email address is already set for this class")
+                        return "EMAIL_EXISIT"
                         break
                 break
             else:
@@ -1011,8 +1150,8 @@ class CEN_alert(CourseEnrolmentNotifier):
         Dic_Alert.clear()
         ListOfDB_Alert = DB_Alert.query().order(DB_Alert.subject, DB_Alert.catalog_num, DB_Alert.class_num, -DB_Alert.queried_time)
         for alert in ListOfDB_Alert:
-            alert_id = alert.key.id()
-            searchId = alert_id[:alert_id.rfind("-")]
+            alert_id = alert.key.id() #ECE-628-4400-5
+            searchId = alert_id[:alert_id.rfind("-")] #ECE-628-4400
             if Dic_Alert_get_by_id(searchId) == None:
                 newAlert = Alert(alert.level, 
                                  alert.sess, 
@@ -1021,7 +1160,8 @@ class CEN_alert(CourseEnrolmentNotifier):
                                  alert.class_num,
                                  alert.enrol_cap, 
                                  alert.enrol_tot,
-                                 alert.email)
+                                 alert.email,
+                                 alert.user_email)
                 Dic_Alert_put(searchId, newAlert)
             else:
                 continue
@@ -1131,6 +1271,7 @@ class CEN_alert_run(CEN_alert):
                                  enrol_cap = enrol_cap,
                                  enrol_tot = enrol_tot,
                                  email = copy.copy(alreadyExistDB_Alert.email),
+                                 user_email = copy.copy(alreadyExistDB_Alert.user_email),
                                  queried_time = new_queried_time).put()
                 break
             else:
@@ -1166,7 +1307,8 @@ class FlushCourseClass(ECEHandle):
     def get(self):
         # ndb.delete_multi(Course.query().fetch(keys_only=True))
         # ndb.delete_multi(Class.query().fetch(keys_only=True))
-        self.render_error_page(errors = ["Course & Class Database are flushed successfully!"])
+        ndb.delete_multi(DB_Alert.query().fetch(keys_only=True))
+        self.render_error_page(errors = ["DB_Alert Database are flushed successfully!"])
 
 # python regex???? to solve it!!!!!!
 
@@ -1175,6 +1317,7 @@ classID = r'([A-Z]+\-[a-zA-Z0-9]+\-[0-9]+)'
 app = webapp2.WSGIApplication([
     ('/?', HomePage),
     ('/add-app', AddApp),
+    ('/add-black', AddBlack),
     ('/uw-cen/?', CourseEnrolmentNotifier),
     ('/uw-cen/' + courseID, CEN_class_page),
     ('/uw-cen/' + classID, CEN_alert),

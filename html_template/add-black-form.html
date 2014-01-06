@@ -1,0 +1,30 @@
+{% extends "base-head.html" %}
+
+{% block content_app %}
+  <a href="/" class="main-title">UWaterloo Utilities</a>
+    <div class="front-login-area">
+	  {{user_area | safe}}
+	</div>
+  <h4 class="sub-title">Done by Honghao Zhang</h4>
+  <table class="add-form">
+  <form method="post">
+    <table>
+      <tr>
+        <td>Email to be added: </td>
+          <td>
+            <input type="email" name="email_black" value="{{email_black}}">
+          </td>
+      </tr>
+      <tr>
+        <td>Link to be redirected: </td>
+          <td>
+            <input type="text" name="redirect_link" value="{{redirect_link}}">
+          </td>
+      </tr>
+    </table>
+    <input type="hidden" name="referer" value="{{referer}}">
+    <input type="submit" value="Add">
+  </form>
+  </table>
+{% endblock %}
+
