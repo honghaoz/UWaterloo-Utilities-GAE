@@ -34,14 +34,14 @@
 		<table class="class-table">
 			<table>
 				<tr>
-					<td><div style="width: 150px;"><span class="blue">Class Number: </span>{{theClass.class_num}}</div></td>
+					<td><div style="width: 170px;"><span class="blue">Class Number: </span>{{theClass.class_num}}</div></td>
 					<td><div style="width: 150px;"><span class="blue">Section: </span>{{theClass.comp_sec}}</div></td>
 					<td><div style="width: 150px;"><span class="blue">Campus: </span>{{theClass.camp_loc}}</div></td>
 				</tr>
 			</table>
 			<table>
 			<tr>
-				<td><span class="blue">Enrolment: </span></td>
+				<td><span class="blue">Enrollment: </span></td>
 				{% if ((theClass.enrol_tot / theClass.enrol_cap) < 0.5) %}
 					<td><span class="green">{{theClass.enrol_tot}} </span>/ {{theClass.enrol_cap}} (total / capacity)</td>
 				{% elif ((theClass.enrol_tot / theClass.enrol_cap) < 0.75) %}
@@ -130,7 +130,7 @@
 					<td></td>
 					<td></td>
 					<td></td>
-					<td style="font-size:12px;">Enrolment: {{note.enrol_tot}} / {{note.enrol_cap}}</td>
+					<td style="font-size:12px;">Enrollment: {{note.enrol_tot}} / {{note.enrol_cap}}</td>
 				</tr>
 				{% endif %}
 			{% endfor %}

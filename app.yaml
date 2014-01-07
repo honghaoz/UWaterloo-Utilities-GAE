@@ -1,4 +1,4 @@
-application: uw-app
+application: uw-apps
 version: 1-7-3-diffusers
 runtime: python27
 api_version: 1

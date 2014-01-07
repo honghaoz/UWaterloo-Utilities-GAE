@@ -677,6 +677,7 @@ select {
 	font-size: medium;
 	font-weight: 300;
 	text-decoration: none;
+	width: 670px;
 }
 
 .large-font {
@@ -684,7 +685,8 @@ select {
 }
 
 .paper {
-	padding: 5px 5px;
+	font-size: 16px;
+	padding: 7px 7px;
 	background: #fafafa;
 	border: 1px solid #ccc;
     border-radius: 5px;
@@ -697,7 +699,8 @@ select {
 }
 
 .paper:hover {
-	padding: 10px 5px;
+	font-size: 16px;
+	padding: 12px 7px;
 	background: #ffffff;
 	border: 1px solid #bdbdbd;
     border-radius: 5px;
@@ -710,7 +713,8 @@ select {
 }
 
 .paper:active {
-	padding: 10px 10px;
+	font-size: 16px;
+	padding: 12px 12px;
 	background: #ffffff;
 	border: 1px solid #a9a9a9;
     border-radius: 5px;
@@ -883,6 +887,24 @@ select {
 	text-align: right;
 }
 
+.delete_href {
+	color: black;
+	font-size: 13px;
+	text-decoration: none;
+}
+
+.delete_href:hover {
+	color: black;
+	font-size: 13px;
+	text-decoration: none;
+}
+
+.delete_href:active {
+	color: black;
+	font-size: 13px;
+	text-decoration: none;
+}
+
 
 .post + .post {
     margin-top: 15px;
@@ -909,6 +931,14 @@ select {
     text-overlow:ellipsis; 
     width:630px;*/
 }
+
+
+.emails {
+	font-size: 18px;
+	font-weight: 400;
+	width: 300px;
+}
+
 
 .post-title:visisted {
     color: #333;

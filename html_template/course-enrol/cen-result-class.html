@@ -24,7 +24,7 @@
 			</tr>
 			{% if not course.note == None %}
 			<tr>
-				<td colspan="3" class="course-note-td"><i>{{course.note}}</i></td>
+				<td colspan="3"><div class="course-note-td"><i>{{course.note}}</i></div></td>
 			</tr>
 			{% endif %}
 		</table>
@@ -38,20 +38,20 @@
 	{% else %}
 	<a href="https://quest.pecs.uwaterloo.ca/psp/SS/?cmd=login&languageCd=ENG&" style="text-decoration: none;"  target="_blank">
 	<img src="/images/quest-100-green.png" alt="{{course.subject}}{{course.catalog_num}}-{{class.class_num}}" width="25" height="25" class="alarm-icon"></a>
-	<span class="no-alarm-text">Available to Enrol -></span>
+	<span class="no-alarm-text">Available to Enroll -></span>
 	{% endif %}
 	<div class="paper">
 		<table class="class-table">
 			<table>
 				<tr>
-					<td><div style="width: 150px;"><span class="blue">Class Number: </span>{{class.class_num}}</div></td>
+					<td><div style="width: 170px;"><span class="blue">Class Number: </span>{{class.class_num}}</div></td>
 					<td><div style="width: 150px;"><span class="blue">Section: </span>{{class.comp_sec}}</div></td>
 					<td><div style="width: 150px;"><span class="blue">Campus: </span>{{class.camp_loc}}</div></td>
 				</tr>
 			</table>
 			<table>
 			<tr>
-				<td><span class="blue">Enrolment: </span></td>
+				<td><span class="blue">Enrollment: </span></td>
 				{% if ((class.enrol_tot / class.enrol_cap) < 0.5) %}
 					<td><span class="green">{{class.enrol_tot}} </span>/ {{class.enrol_cap}} (total / capacity)</td>
 				{% elif ((class.enrol_tot / class.enrol_cap) < 0.75) %}
@@ -140,7 +140,7 @@
 					<td></td>
 					<td></td>
 					<td></td>
-					<td style="font-size:12px;">Enrolment: {{note.enrol_tot}} / {{note.enrol_cap}}</td>
+					<td style="font-size:12px;">Enrollment: {{note.enrol_tot}} / {{note.enrol_cap}}</td>
 				</tr>
 				{% endif %}
 			{% endfor %}

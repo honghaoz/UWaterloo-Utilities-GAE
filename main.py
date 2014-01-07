@@ -100,6 +100,7 @@ class DB_Alert(ndb.Model):
     queried_time = ndb.IntegerProperty(required = True)
 
     user_email = ndb.JsonProperty(required = True)
+    # send_times = ndb.IntegerProperty(required = True)
 
 class Email_BlackList(ndb.Model):
     email_black = ndb.StringProperty(required = True)
@@ -225,6 +226,7 @@ class Alert:
         self.enrol_tot = enrol_tot
         self.email = email
         self.user_email = user_email
+        # self.send_times = send_times
 
     def isAvailable(self):
         if self.enrol_tot < self.enrol_cap:
@@ -232,7 +234,7 @@ class Alert:
         else:
             return False
     def sendEmail(self):
-        sender_address = "UWaterloo Course Notifier<uw.course.enrolment.notifier@gmail.com>"
+        sender_address = "UWaterloo Course Notifier<uw.course.notifier@gmail.com>"
         email_subject = "UW-Courese Notifier: %(subject)s %(catalog_num)s %(class_num)s is available!" % {"subject" : self.subject, "catalog_num" : self.catalog_num, "class_num" : self.class_num}
         body = '''
             UWaterloo Course Notifier:
@@ -255,6 +257,16 @@ class Alert:
         for email in self.email:
             mail.send_mail(sender_address, email, email_subject, body)
             logging.info("Send %(subject)s %(catalog_num)s : %(class_num)s (%(enrol_tot)s / %(enrol_cap)s) [%(email)s] Successfully! Time: %(time)s" % {"subject" : self.subject, "catalog_num" : self.catalog_num, "class_num" : self.class_num, "enrol_tot" : self.enrol_tot, "enrol_cap" : self.enrol_cap, "email" : email, "time" : str(strftime("%Y-%m-%d %H:%M:%S", gmtime()))})
+        for user, email_list in self.user_email.items():
+            for email_sendtimes in email_list:
+                email_sendtimes[1] += 1
+        alreadyExistDB_Alert = DB_Alert.query(DB_Alert.subject == self.subject, 
+                                              DB_Alert.catalog_num == self.catalog_num,
+                                              DB_Alert.class_num == self.class_num).order(-DB_Alert.queried_time).get()
+        for user, email_list in alreadyExistDB_Alert.user_email.items():
+            for email_sendtimes in email_list:
+                email_sendtimes[1] += 1
+        alreadyExistDB_Alert.put()
 
 Dic_Alert = OrderedDict()
 def Dic_Alert_get_by_id(id):
@@ -558,9 +570,34 @@ class CourseEnrolmentNotifier(ECEHandle):
         self.process_user_area()
         self.render('/course-enrol/cen-alert-dict.html', dic_alert = dic_alert, Alert_runing_switch = Alert_runing_switch, user_area = self.user_area)
 
-    def render_user_manage_page(self, user_email, dic_alert):
-        self.process_user_area()
-        self.render('/course-enrol/cen-user-manage.html', user_email = user_email, dic_alert = dic_alert, user_area = self.user_area)
+    def render_user_manage_page(self, user_email, 
+                                dic_alert, 
+                                sure_to_delete = 0, 
+                                email_to_be_deleted = "", 
+                                subject_to_be_deleted = "",
+                                catalog_num_to_be_deleted = "",
+                                class_num_to_be_deleted = ""):
+        current_user = self.process_user_area()
+        login_link = users.create_login_url(self.request.url)
+        isUser_email_exist = False
+        for id, alert in dic_alert.items():
+            if user_email in alert.user_email:
+                isUser_email_exist = True
+                break
+            else:
+                continue
+        self.render('/course-enrol/cen-user-manage.html', user_email = user_email, 
+                                                          isUser_email_exist = isUser_email_exist, 
+                                                          dic_alert = dic_alert, 
+                                                          user_area = self.user_area, 
+                                                          login_link = login_link, 
+                                                          current_user = current_user, 
+                                                          term_dic = self.term_dic, 
+                                                          sure_to_delete = sure_to_delete,
+                                                          email_to_be_deleted = email_to_be_deleted,
+                                                          subject_to_be_deleted = subject_to_be_deleted,
+                                                          catalog_num_to_be_deleted = catalog_num_to_be_deleted,
+                                                          class_num_to_be_deleted = class_num_to_be_deleted)
 
     def render_feedback_page(self, name = "", name_error = "", email = "", email_error = "", feedback = "", feedback_error = "", referer = ""):
         user_email = self.process_user_area()
@@ -1045,8 +1082,8 @@ class CEN_alert(CourseEnrolmentNotifier):
             if queryResult == "EMAIL_EXISIT":
                 self.render_alert_page(self.theClass, self.theCourse, email, "*Login is recommonded, <br>otherwise, alert information will be visible to others and cannot manage your alerts!", "This Email address is already set for this class")
             elif queryResult == True:
-                sender_address = "UWaterloo Course Notifier <uw.course.enrolment.notifier@gmail.com>"
-                mail_subject = "UW-Course Notifier: Alert:%(subject)s %(catalog_num)s %(class_num)s is set successfully!" % {"subject" : subject, "catalog_num" : catalog_num, "class_num" : class_num}
+                sender_address = "UWaterloo Course Notifier <uw.course.notifier@gmail.com>"
+                mail_subject = "Alert:%(subject)s %(catalog_num)s %(class_num)s is set successfully! UW-Course Notifier" % {"subject" : subject, "catalog_num" : catalog_num, "class_num" : class_num}
                 mail_body = '''
                     UWaterloo Course Notifier:
 
@@ -1144,7 +1181,7 @@ class CEN_alert(CourseEnrolmentNotifier):
                                  enrol_cap, 
                                  enrol_tot,
                                  [email],
-                                 {user_name : [email]})
+                                 {user_name : [[email, 0]]})
                     Dic_Alert_put(id + "-" + str(class_num), newAlert)
                 else:
                     if not email in alreadyExistAlert.email:
@@ -1153,9 +1190,9 @@ class CEN_alert(CourseEnrolmentNotifier):
                         alreadyExistAlert.email.append(email)
                         if user_name in alreadyExistAlert.user_email:
                             old_user_email = alreadyExistAlert.user_email[user_name]
-                            old_user_email.append(email)
+                            old_user_email.append([email, 0])
                         else:
-                            alreadyExistAlert.user_email[user_name] = [email]
+                            alreadyExistAlert.user_email[user_name] = [[email, 0]]
                     else:
                         return "EMAIL_EXISIT"
                         break
@@ -1175,26 +1212,26 @@ class CEN_alert(CourseEnrolmentNotifier):
                              enrol_cap = enrol_cap,
                              enrol_tot = enrol_tot,
                              email = [email],
-                             user_email = {user_name : [email]},
+                             user_email = {user_name : [[email, 0]]},
                              queried_time = queried_time).put()
                 else:
                     new_email = copy.copy(alreadyExistDB_Alert.email)
                     if not email in new_email:
                         new_email.append(email)
                         new_queried_time = alreadyExistDB_Alert.queried_time + 1
-                        new_user_email = copy.copy(alreadyExistDB_Alert.user_email) #{u'zhh358': [u'1@1.com']}
+                        new_user_email = copy.copy(alreadyExistDB_Alert.user_email) #{u'zhh358': [[u'1@1.com', 0]]}
                         if user_name in new_user_email:
                             # user already exist
                             # get the old email list of this user
                             new_user_email_list = new_user_email[user_name]
                             # make the new email list
-                            new_user_email_list.append(email)
+                            new_user_email_list.append([email, 0])
                             # change the dict, let the value of this user is new email list
                             new_user_email[user_name] = new_user_email_list
                         else:
                             # user dosen't exist
                             # simply add new key to dict
-                            new_user_email[user_name] = [email]
+                            new_user_email[user_name] = [[email, 0]]
 
                         DB_Alert(id = id + "-" + str(class_num) + "-" + str(new_queried_time),
                                  level = level_id,
@@ -1219,22 +1256,27 @@ class CEN_alert(CourseEnrolmentNotifier):
     def copy_db2dict(self):
         Dic_Alert.clear()
         ListOfDB_Alert = DB_Alert.query().order(DB_Alert.subject, DB_Alert.catalog_num, DB_Alert.class_num, -DB_Alert.queried_time)
-        for alert in ListOfDB_Alert:
-            alert_id = alert.key.id() #ECE-628-4400-5
-            searchId = alert_id[:alert_id.rfind("-")] #ECE-628-4400
-            if Dic_Alert_get_by_id(searchId) == None:
-                newAlert = Alert(alert.level, 
-                                 alert.sess, 
-                                 alert.subject, 
-                                 alert.catalog_num, 
-                                 alert.class_num,
-                                 alert.enrol_cap, 
-                                 alert.enrol_tot,
-                                 alert.email,
-                                 alert.user_email)
-                Dic_Alert_put(searchId, newAlert)
-            else:
-                continue
+        if not ListOfDB_Alert == None:
+            logging.info("copy!!!")
+            for alert in ListOfDB_Alert:
+                alert_id = alert.key.id() #ECE-628-4400-5
+                searchId = alert_id[:alert_id.rfind("-")] #ECE-628-4400
+                if Dic_Alert_get_by_id(searchId) == None:
+                    newAlert = Alert(alert.level, 
+                                     alert.sess, 
+                                     alert.subject, 
+                                     alert.catalog_num, 
+                                     alert.class_num,
+                                     alert.enrol_cap, 
+                                     alert.enrol_tot,
+                                     alert.email,
+                                     alert.user_email)
+                    Dic_Alert_put(searchId, newAlert)
+                else:
+                    continue
+        else:
+            logging.info("shabi bu copy!!!")
+
 
 class CEN_alert_run(CEN_alert):
     def get(self):
@@ -1331,18 +1373,22 @@ class CEN_alert_run(CEN_alert):
                 alreadyExistDB_Alert = DB_Alert.query(DB_Alert.subject == alert.subject, 
                                                       DB_Alert.catalog_num == alert.catalog_num,
                                                       DB_Alert.class_num == alert.class_num).order(-DB_Alert.queried_time).get()
-                new_queried_time = alreadyExistDB_Alert.queried_time + 1
-                DB_Alert(id = id + "-" + str(alert.class_num) + "-" + str(new_queried_time),
-                                 level = alreadyExistDB_Alert.level,
-                                 sess = alreadyExistDB_Alert.sess,
-                                 subject = alreadyExistDB_Alert.subject,
-                                 catalog_num = alreadyExistDB_Alert.catalog_num,
-                                 class_num = alreadyExistDB_Alert.class_num,
-                                 enrol_cap = enrol_cap,
-                                 enrol_tot = enrol_tot,
-                                 email = copy.copy(alreadyExistDB_Alert.email),
-                                 user_email = copy.copy(alreadyExistDB_Alert.user_email),
-                                 queried_time = new_queried_time).put()
+                if not alreadyExistDB_Alert == None:
+                    new_queried_time = alreadyExistDB_Alert.queried_time + 1
+                    DB_Alert(id = id + "-" + str(alert.class_num) + "-" + str(new_queried_time),
+                                     level = alreadyExistDB_Alert.level,
+                                     sess = alreadyExistDB_Alert.sess,
+                                     subject = alreadyExistDB_Alert.subject,
+                                     catalog_num = alreadyExistDB_Alert.catalog_num,
+                                     class_num = alreadyExistDB_Alert.class_num,
+                                     enrol_cap = enrol_cap,
+                                     enrol_tot = enrol_tot,
+                                     email = copy.copy(alreadyExistDB_Alert.email),
+                                     user_email = copy.copy(alreadyExistDB_Alert.user_email),
+                                     queried_time = new_queried_time).put()
+                else:
+                    logging.error("Query Failed!!!!")
+                    return False
                 break
             else:
                 row += 1
@@ -1351,10 +1397,47 @@ class CEN_alert_run(CEN_alert):
 
 class CEN_alert_manage(CEN_alert):
     def get(self, email):
-        self.render_user_manage_page(email, Dic_Alert)
-    def post(self):
-        pass
-        
+        self.render_user_manage_page(user_email = email, dic_alert = Dic_Alert, sure_to_delete = 0)
+
+class CEN_alert_manage_delete(CEN_alert):
+    def get(self, current_user, class_id, email_to_be_deleted, sure_to_delete):
+        subject, catalog_num, class_num = class_id.split('-')
+        logging.info(current_user)
+        logging.info(subject)
+        logging.info(catalog_num)
+        logging.info(class_num)
+        logging.info(email_to_be_deleted)
+        logging.info(sure_to_delete)
+        if sure_to_delete == "0":
+            self.render_user_manage_page(user_email = current_user, 
+                                         dic_alert = Dic_Alert, 
+                                         sure_to_delete = "1",
+                                         email_to_be_deleted = email_to_be_deleted,
+                                         subject_to_be_deleted = subject,
+                                         catalog_num_to_be_deleted = catalog_num,
+                                         class_num_to_be_deleted = class_num)
+        elif sure_to_delete == "1":
+            # delete email in Dic_Alert
+            alert = Dic_Alert_get_by_id(str(subject) + "-" + str(catalog_num) + "-" + str(class_num))
+            alert.email.remove(email_to_be_deleted)
+            for email_sendtimes in alert.user_email[current_user]:
+                if current_user == email_sendtimes[0]:
+                    alert.user_email[current_user].remove(email_sendtimes)
+                    if alert.user_email[current_user] == []:
+                        del alert.user_email[current_user]
+
+            # delete email in DB_Alert
+            alreadyExistDB_Alert = DB_Alert.query(DB_Alert.subject == alert.subject, 
+                                                  DB_Alert.catalog_num == alert.catalog_num,
+                                                  DB_Alert.class_num == alert.class_num).order(-DB_Alert.queried_time).get()
+            alreadyExistDB_Alert.email.remove(email_to_be_deleted)
+            for email_sendtimes in alreadyExistDB_Alert.user_email[current_user]:
+                if current_user == email_sendtimes[0]:
+                    alreadyExistDB_Alert.user_email[current_user].remove(email_sendtimes)
+                    if alreadyExistDB_Alert.user_email[current_user] == []:
+                        del alreadyExistDB_Alert.user_email[current_user]
+            alreadyExistDB_Alert.put()
+            self.redirect("/uw-cen/user=%s" % current_user)
 
 class CEN_alert_showditc(CEN_alert):
     def get(self):
@@ -1428,6 +1511,7 @@ class FlushCourseClass(ECEHandle):
 
 courseID = r'([A-Z]+\-[a-zA-Z0-9]+)'
 classID = r'([A-Z]+\-[a-zA-Z0-9]+\-[0-9]+)'
+class_num = r'([0-9]+)'
 EMAIL = r'([\w-]+@[\w-]+\.+[\w-]+)'
 app = webapp2.WSGIApplication([
     ('/?', HomePage),
@@ -1437,8 +1521,10 @@ app = webapp2.WSGIApplication([
     ('/uw-cen/' + courseID, CEN_class_page),
     ('/uw-cen/' + classID, CEN_alert),
     ('/uw-cen/feedback', CEN_feedback),
-    ('/uw-cen/user=([a-z]{6})/?', CEN_alert_manage),
-    ('/uw-cen/user=%s/?' % EMAIL, CEN_alert_manage),
+
+    ('/uw-cen/user=%s/%s/%s/([0-1])' % (EMAIL, classID, EMAIL), CEN_alert_manage_delete),
+    ('/uw-cen/user=([a-z]{6})', CEN_alert_manage),
+    ('/uw-cen/user=%s' % EMAIL, CEN_alert_manage),
     ('/uw-cen/alert/run', CEN_alert_run),
     ('/uw-cen/alert/show-dict', CEN_alert_showditc),
     ('/uw-cen/alert/copy-db2dict', CEN_alert_copy_db2dict),
