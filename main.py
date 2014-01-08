@@ -363,7 +363,7 @@ class ECEHandle(webapp2.RequestHandler):
             self.user_area = ('''<a href="%s" class="login-link"></a>
                                  <div class="sub-login-area">
                                  <div class="user">
-                                    <div style="font-size: 11px;"><i>Login to manage your alerts!</i></div>
+                                    <div style="font-size: 11px;"><i>Log in to manage your alerts!</i></div>
                                  </div>
                                     <div class="user">
                                     <br>

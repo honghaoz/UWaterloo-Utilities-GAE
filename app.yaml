@@ -1,5 +1,5 @@
 application: uw-apps
-version: 1-7-3-diffusers
+version: 1-8-email-auth
 runtime: python27
 api_version: 1
 threadsafe: yes

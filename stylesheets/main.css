@@ -523,6 +523,16 @@ select {
 	font-weight: 300;
 }
 
+.home-table-description-link {
+	color : gray;
+	font-weight: 300;
+}
+
+.home-table-description-link:visited {
+	color : gray;
+	font-weight: 300;
+}
+
 .add-form {
 	position: relative;
     top: 10px;
