@@ -85,6 +85,9 @@ class Apps(ndb.Model):
 #     created_time = ndb.DateTimeProperty(auto_now_add = True)
 #     last_modified = ndb.DateTimeProperty(auto_now = True)
 
+class Term_Dic(ndb.Model):
+    term_dic = ndb.JsonProperty(required = True)
+
 class DB_Alert(ndb.Model):
     level = ndb.StringProperty(required = True)
     sess = ndb.StringProperty(required = True)
@@ -586,18 +589,32 @@ class CourseEnrolmentNotifier(ECEHandle):
                 break
             else:
                 continue
-        self.render('/course-enrol/cen-user-manage.html', user_email = user_email, 
-                                                          isUser_email_exist = isUser_email_exist, 
-                                                          dic_alert = dic_alert, 
-                                                          user_area = self.user_area, 
-                                                          login_link = login_link, 
-                                                          current_user = current_user, 
-                                                          term_dic = self.term_dic, 
-                                                          sure_to_delete = sure_to_delete,
-                                                          email_to_be_deleted = email_to_be_deleted,
-                                                          subject_to_be_deleted = subject_to_be_deleted,
-                                                          catalog_num_to_be_deleted = catalog_num_to_be_deleted,
-                                                          class_num_to_be_deleted = class_num_to_be_deleted)
+        if user_email == "public":
+            self.render('/course-enrol/cen-user-manage-public.html', user_email = user_email, 
+                                                              isUser_email_exist = isUser_email_exist, 
+                                                              dic_alert = dic_alert, 
+                                                              user_area = self.user_area, 
+                                                              login_link = login_link, 
+                                                              current_user = current_user, 
+                                                              term_dic = self.term_dic, 
+                                                              sure_to_delete = sure_to_delete,
+                                                              email_to_be_deleted = email_to_be_deleted,
+                                                              subject_to_be_deleted = subject_to_be_deleted,
+                                                              catalog_num_to_be_deleted = catalog_num_to_be_deleted,
+                                                              class_num_to_be_deleted = class_num_to_be_deleted)
+        else:
+            self.render('/course-enrol/cen-user-manage.html', user_email = user_email, 
+                                                              isUser_email_exist = isUser_email_exist, 
+                                                              dic_alert = dic_alert, 
+                                                              user_area = self.user_area, 
+                                                              login_link = login_link, 
+                                                              current_user = current_user, 
+                                                              term_dic = self.term_dic, 
+                                                              sure_to_delete = sure_to_delete,
+                                                              email_to_be_deleted = email_to_be_deleted,
+                                                              subject_to_be_deleted = subject_to_be_deleted,
+                                                              catalog_num_to_be_deleted = catalog_num_to_be_deleted,
+                                                              class_num_to_be_deleted = class_num_to_be_deleted)
 
     def render_feedback_page(self, name = "", name_error = "", email = "", email_error = "", feedback = "", feedback_error = "", referer = ""):
         user_email = self.process_user_area()
@@ -632,14 +649,20 @@ class CourseEnrolmentNotifier(ECEHandle):
         global sess_id
         sess_id = self.request.get('sess')
 
+        global level
         if self.level == 'grad':
-            global level
             level = 'Graduate'
         elif self.level == 'under':
-            global level
             level = 'Undergraduate'
         global sess
-        sess = str(self.term_dic[self.sess])
+        # bug: because new instance always initial, it will clear term_dic
+        # so, use database to initial self.term_dic if it is empty
+        try:
+            sess = str(self.term_dic[self.sess])
+        except:
+            self.term_dic = Term_Dic.get_by_id(1).term_dic;
+            sess = str(self.term_dic[self.sess])
+
         global subject
         subject = str(self.subject)
         
@@ -680,9 +703,13 @@ class CourseEnrolmentNotifier(ECEHandle):
             # term_dic should like this:
             # {u'1135': u'Spring 2013', u'1139': u'Fall 2013',u'1141': u'Winter 2014', u'1145': u'Spring 2014'}
             term_list = termDescp.split(", ")
+            new_Term_Dict = Term_Dic(id = 1, term_dic = {})
+            new_Term_Dict.put()
             for term in term_list:
                 term_id, term_descp = term.split("=")
                 self.term_dic[term_id] = term_descp
+                new_Term_Dict.term_dic[term_id] = term_descp
+            new_Term_Dict.put()
 
             # sess
             sess = soup.find_all("select", {"name" : "sess"})
@@ -1402,12 +1429,6 @@ class CEN_alert_manage(CEN_alert):
 class CEN_alert_manage_delete(CEN_alert):
     def get(self, current_user, class_id, email_to_be_deleted, sure_to_delete):
         subject, catalog_num, class_num = class_id.split('-')
-        logging.info(current_user)
-        logging.info(subject)
-        logging.info(catalog_num)
-        logging.info(class_num)
-        logging.info(email_to_be_deleted)
-        logging.info(sure_to_delete)
         if sure_to_delete == "0":
             self.render_user_manage_page(user_email = current_user, 
                                          dic_alert = Dic_Alert, 
@@ -1522,6 +1543,7 @@ app = webapp2.WSGIApplication([
     ('/uw-cen/' + classID, CEN_alert),
     ('/uw-cen/feedback', CEN_feedback),
 
+    ('/uw-cen/user=([a-z]{6})/%s/%s/([0-1])' % (classID, EMAIL), CEN_alert_manage_delete),
     ('/uw-cen/user=%s/%s/%s/([0-1])' % (EMAIL, classID, EMAIL), CEN_alert_manage_delete),
     ('/uw-cen/user=([a-z]{6})', CEN_alert_manage),
     ('/uw-cen/user=%s' % EMAIL, CEN_alert_manage),

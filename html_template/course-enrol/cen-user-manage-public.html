@@ -6,14 +6,13 @@
 		<div class="paper">
 			<div style="text-align: center; font-size: 18px;">
 			<br>
-			<div>You haven't set any alerts yet...</div>
+			<div>No Public Alerts...</div>
 			<br>
-			<div><a href="/uw-cen/" class="manage">Start to set an alert now!</a></div>
+			<div><a href="{{login_link}}" class="manage">Log in</a> to manage your alerts!</div>
 			<br>
 			</div>
 		</div>
 		{% else %}
-		<span class="choose" style="position: relative; left: 0px;">Here are alerts you've set:</span>
 		<br>
 		{% for id, alert in dic_alert.items() %}
 			{% if user_email in alert.user_email %}
@@ -46,21 +45,16 @@
 				{% for user, emaillist in alert.user_email.items() %}
 					{% if user_email == user %}
 					<br>
-						<div>Your Email Alerts:</div>
+						<div>Public Email Alerts:</div>
 					<table>
 						<tr><td></td></tr>
 						{% for email in emaillist %}
 						<tr>							
 							<td><div class="emails">{{email[0]}}</div></td>
 							<td>
-							{% if not current_user == "public" %}
-								<div class="delete_href"><a href="/uw-cen/user={{current_user}}/{{alert.subject}}-{{alert.catalog_num}}-{{alert.class_num}}/{{email[0]}}/{{sure_to_delete}}" class="delete_href"><div class="input-reset-front">Delete</div></a></div>
-								{% if (sure_to_delete == "1") and (subject_to_be_deleted == alert.subject) and (catalog_num_to_be_deleted == alert.catalog_num) and (class_num_to_be_deleted == alert.class_num) and (email_to_be_deleted == email[0]) %}
-								<div style="font-size:15px; color:red;">Are you sure to delete?</div>
-								{% endif %}
-							{% else %}
+
 								<div class="delete_href"><a href="mailto:zhh358@gmail.com?Subject=Request to delete alert: {{alert.subject}}-{{alert.catalog_num}}-{{alert.class_num}}: {{email[0]}}" class="delete_href"><div class="input-reset-front">Request to Delete</div></a></div>
-							{% endif %}
+								
 							</td>
 							<form>
 						</tr>
