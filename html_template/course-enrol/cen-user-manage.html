@@ -56,6 +56,7 @@
 							{% if not current_user == "public" %}
 								<div class="delete_href"><a href="/uw-cen/user={{current_user}}/{{alert.subject}}-{{alert.catalog_num}}-{{alert.class_num}}/{{email[0]}}/{{sure_to_delete}}" class="delete_href"><div class="input-reset-front">Delete</div></a></div>
 								{% if (sure_to_delete == "1") and (subject_to_be_deleted == alert.subject) and (catalog_num_to_be_deleted == alert.catalog_num) and (class_num_to_be_deleted == alert.class_num) and (email_to_be_deleted == email[0]) %}
+								
 								<div style="font-size:15px; color:red;">Are you sure to delete?</div>
 								{% endif %}
 							{% else %}

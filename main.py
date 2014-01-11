@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# importations
+
+# Importations
 import webapp2
 import re
 import os
@@ -45,17 +46,25 @@ from google.appengine.api import users
 
 import datetime
 
-# Global variables
+# Global variables for jinja environment
 template_dir = os.path.join(os.path.dirname(__file__), 'html_template')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape = True)
 
 # Databases
+# Database - Apps
+#   used for store applications created for UW utilities
+#   UW Utilities is meant for different apps in one place.
 class Apps(ndb.Model):
+    # name is the name of the app
+    # link is the url link for this app
+    # description is used to introduce this app, for what this app is used for
     name = ndb.StringProperty(required = True)
     link = ndb.StringProperty(required = True)
     description = ndb.TextProperty(required = True)
     created_time = ndb.DateTimeProperty(auto_now_add = True)
     last_modified = ndb.DateTimeProperty(auto_now = True)
+
+# Deleted Class
 
 # class Class(ndb.Model):
 #     subject = ndb.StringProperty(required = True)
@@ -85,36 +94,68 @@ class Apps(ndb.Model):
 #     created_time = ndb.DateTimeProperty(auto_now_add = True)
 #     last_modified = ndb.DateTimeProperty(auto_now = True)
 
+# Database Term_Dic
+#   This Database is used for store global dictionary: term_dic, 
+#   which is store values and description of the term, 
+#   for example: term_dic["1141"] == "Winter 2014"
 class Term_Dic(ndb.Model):
     term_dic = ndb.JsonProperty(required = True)
 
+# Database DB_Alert
+#   This Database is main database, used for store class information of alerts
+#   This Database is updated when uw-cen/Alert/run runs
+#   When run once, this database is added with a new item just add 1 to queried_time and new informations
 class DB_Alert(ndb.Model):
+    # level is either 'under' or 'grad'
     level = ndb.StringProperty(required = True)
+    # sess is '1141' - Winter 2014
     sess = ndb.StringProperty(required = True)
+    # subject is 'ECE' ...
     subject = ndb.StringProperty(required = True)
+    # catalog_num is 653 for exmaple
     catalog_num = ndb.StringProperty(required = True)
+    # class_num 
     class_num = ndb.StringProperty(required = True)
     enrol_cap = ndb.IntegerProperty(required = True)
     enrol_tot = ndb.IntegerProperty(required = True)
+    # email is a list of email addresses, for example: ['abc@qq.com', '123@123.com']
     email = ndb.StringProperty(required = False, repeated = True)
     created_time = ndb.DateTimeProperty(auto_now_add = True)
     last_modified = ndb.DateTimeProperty(auto_now = True)
 
+    # quried_time is the number of queried time, for exmaple, when ECE 653 4404 is updated for
+    # the 4th time, then this property is 4
     queried_time = ndb.IntegerProperty(required = True)
 
+    # user_email is a dic, like this formate: {'user name' : [['123@abc.com', 3], ['abc@123.com', 0]...}
+    # user name (google email) is the key, value is list of list : [email_address, email_sent_times]
     user_email = ndb.JsonProperty(required = True)
-    # send_times = ndb.IntegerProperty(required = True)
 
+
+# Database
+#   used for setting google account black list, when user is set in black list,
+#   then this user cannot use this app
 class Email_BlackList(ndb.Model):
     email_black = ndb.StringProperty(required = True)
     redirect_link = ndb.TextProperty(required = True)
 
+# Database
+#   used for storing feedback informations
+#   name email and feedback content
 class FeedBack(ndb.Model):
     name = ndb.StringProperty(required = True)
     email = ndb.StringProperty(required = True)
     feedback = ndb.TextProperty(required = True)
 
-# data structures
+# Global Data structures
+
+# CClass_TBI is cluster of information stored in the note list of CClass
+# includes:
+#   Reserved(colspan = 6), 
+#       with enrol_cap and enrol_tot
+#   time_date, bldg_room, instructor
+#   Held with(colspan = 10)
+
 class CClass_TBI:
     col6 = None
     enrol_cap = None
@@ -133,6 +174,11 @@ class CClass_TBI:
         self.instructor = instructor
         self.col10 = col10
 
+# CClass class is used to stroing class informations
+# includes:
+#   id, used for put and get, like operations of database
+#   subject, catalog_num, ...
+#   note is a list of CClass_TBI, two kinds: Reserved(colspan = 6), Held with(colspan = 10)
 class CClass:
     def __init__(self, id = None, subject = None, catalog_num = None, class_num = None, comp_sec = None, camp_loc = None,
                        assoc_class = None, rel1 = None, rel2 = None, enrol_cap = None, enrol_tot = None,
@@ -156,8 +202,16 @@ class CClass:
         self.instructor = instructor
         self.note = note
 
-List_Dic_CClass = {} # used for storing different users' query data
+# List_Dic_CClass is a dict stroing CClass
+# used for storing different users' query data
+# for example, for this app only have one instance, if two different users query at the same time
+# their query results will affect with each other. 
+# use dict to separate different users' query
+List_Dic_CClass = {} 
 #Dic_CClass = OrderedDict()
+
+# get_by_id, put and clear, used for storing query result of CClass to List_Dic_CClass, 
+# need query_id (query sequence)
 def Dic_CClass_get_by_id(query_id ,id):
     global List_Dic_CClass
     D_CClass = List_Dic_CClass[query_id]
@@ -181,6 +235,8 @@ def Dic_CClass_clear(query_id):
     except:
         pass
 
+# class CCourse
+# used for stroing queried course information, the classes is a list of CClass
 class CCourse:
     def __init__(self, subject = None, catalog_num = None, units = None, title = None, note = None):
         self.subject = subject
@@ -190,6 +246,7 @@ class CCourse:
         self.note = note
         self.classes = []
         self.created_time = time.localtime()
+
 
 List_Dic_CCourse = {} # used for storing different users' query data
 #Dic_CCourse = OrderedDict()
@@ -216,7 +273,11 @@ def Dic_CCourse_clear(query_id):
     except:
         pass
 
+# class Alert is the class type of DB_Alerts, 
+# if class Alert is empty, the app will copy data from DB_Alert to Alert.
+# all of the alerts operations will use Alert's information
 class Alert:
+    max_send_time = 6
     def __init__(self, level = None, sess = None, subject = None, catalog_num = None,
                        class_num = None, enrol_cap = None, enrol_tot = None,
                        email = [], user_email = {}):
@@ -228,14 +289,18 @@ class Alert:
         self.enrol_cap = enrol_cap
         self.enrol_tot = enrol_tot
         self.email = email
-        self.user_email = user_email
-        # self.send_times = send_times
 
+        # user_email is a dic, like this formate: {'user name' : [['123@abc.com', 3], ['abc@123.com', 0]...}
+        # user name (google email) is the key, value is list of list : [email_address, email_sent_times]
+        self.user_email = user_email
+
+    # check if spots are available
     def isAvailable(self):
         if self.enrol_tot < self.enrol_cap:
             return True
         else:
             return False
+    # when isAvailable == True, we will send notification emails to users
     def sendEmail(self):
         sender_address = "UWaterloo Course Notifier<uw.course.notifier@gmail.com>"
         email_subject = "UW-Courese Notifier: %(subject)s %(catalog_num)s %(class_num)s is available!" % {"subject" : self.subject, "catalog_num" : self.catalog_num, "class_num" : self.class_num}
@@ -247,22 +312,44 @@ class Alert:
 
             Go QUEST and add it Now!
 
+            For not sending too many email notifications,
+            You will receive %(send_time)s more email notifications, if you want to receive more, delete this email address and reset the alert.
             ----------------------
             UWaterloo Course Notifier
             by Honghao Zhang
-        ''' % {"subject" : self.subject, 
-               "catalog_num" : self.catalog_num, 
-               "class_num" : self.class_num, 
-               "enrol_tot" : self.enrol_tot, 
-               "enrol_cap" : self.enrol_cap}
+        '''
                # Last query time: %(time)s
                # "time" : str(strftime("%Y-%m-%d %H:%M:%S", localtime()))
+
+        # send email to users, email addresses is retrived from the list of email address (email)
         for email in self.email:
-            mail.send_mail(sender_address, email, email_subject, body)
-            logging.info("Send %(subject)s %(catalog_num)s : %(class_num)s (%(enrol_tot)s / %(enrol_cap)s) [%(email)s] Successfully! Time: %(time)s" % {"subject" : self.subject, "catalog_num" : self.catalog_num, "class_num" : self.class_num, "enrol_tot" : self.enrol_tot, "enrol_cap" : self.enrol_cap, "email" : email, "time" : str(strftime("%Y-%m-%d %H:%M:%S", gmtime()))})
+            logging.info(email)
+            send_time = self.get_send_time(email)
+            if send_time == None:
+                logging.error("send_time Failed")
+            else:
+                send_time += 1
+            logging.info(send_time)
+            if send_time <= self.max_send_time:
+                newbody = body % {"subject" : self.subject, 
+                                  "catalog_num" : self.catalog_num, 
+                                  "class_num" : self.class_num, 
+                                  "enrol_tot" : self.enrol_tot, 
+                                  "enrol_cap" : self.enrol_cap,
+                                  'send_time' : send_time}
+                mail.send_mail(sender_address, email, email_subject, newbody)
+                logging.info("Send %(subject)s %(catalog_num)s : %(class_num)s (%(enrol_tot)s / %(enrol_cap)s) [%(email)s] Successfully! Send_time: %(send_time)s Time: %(time)s" % {"subject" : self.subject, "catalog_num" : self.catalog_num, "class_num" : self.class_num, "enrol_tot" : self.enrol_tot, "enrol_cap" : self.enrol_cap, "email" : email, "send_time" : send_time, "time" : str(strftime("%Y-%m-%d %H:%M:%S", gmtime()))})
+            else:
+                logging.info("Stop sending %(subject)s %(catalog_num)s : %(class_num)s (%(enrol_tot)s / %(enrol_cap)s) [%(email)s]! Tried_Send_time: %(send_time)s Time: %(time)s" % {"subject" : self.subject, "catalog_num" : self.catalog_num, "class_num" : self.class_num, "enrol_tot" : self.enrol_tot, "enrol_cap" : self.enrol_cap, "email" : email, "send_time" : send_time, "time" : str(strftime("%Y-%m-%d %H:%M:%S", gmtime()))})
+                continue
+
+
+        # add send times for each email address item
+        # add for Alert
         for user, email_list in self.user_email.items():
             for email_sendtimes in email_list:
                 email_sendtimes[1] += 1
+        # add for DB_Alert
         alreadyExistDB_Alert = DB_Alert.query(DB_Alert.subject == self.subject, 
                                               DB_Alert.catalog_num == self.catalog_num,
                                               DB_Alert.class_num == self.class_num).order(-DB_Alert.queried_time).get()
@@ -271,6 +358,16 @@ class Alert:
                 email_sendtimes[1] += 1
         alreadyExistDB_Alert.put()
 
+    def get_send_time(self, email_addr):
+        for user, email_list in self.user_email.items():
+            for email in email_list:
+                logging.info(email)
+                if email[0] == email_addr:
+                    return email[1]
+        return None
+
+
+# get_by_id and put for class Alert
 Dic_Alert = OrderedDict()
 def Dic_Alert_get_by_id(id):
     global Dic_Alert
@@ -331,6 +428,8 @@ class ECEHandle(webapp2.RequestHandler):
         self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
 
     # google user
+    # process_user_area used for setting user_area, which is used in html template
+    # return user's email address or 'public'
     user_area = ""
     def process_user_area(self):
         user = users.get_current_user()
@@ -409,6 +508,7 @@ class HomePage(ECEHandle):
             self.process_user_area()
             apps = ndb.gql("SELECT * FROM Apps")
             self.render('homepage.html', apps = apps, user_area = self.user_area)
+# add app for UW Utilities
 class AddApp(ECEHandle):
     referer = ""
     def render_page(self):
@@ -432,6 +532,7 @@ class AddApp(ECEHandle):
             self.referer = self.referer
         self.render_page()
 
+# add emails to black list
 class AddBlack(ECEHandle):
     referer = ""
     def render_page(self):
@@ -451,13 +552,14 @@ class AddBlack(ECEHandle):
         self.render_page()
 
 # global variables, used for communication between handlers
-level_id = ""
-level = ""
-sess_id = None
-sess = ""
-subject = ""
+level_id = "" # under grad
+level = ""  # Undergraduate  graduate
+sess_id = None  # 1141
+sess = ""   # Winter 2014
+subject = ""    # ECE
 query_url = "http://www.adm.uwaterloo.ca/cgi-bin/cgiwrap/infocour/salook.pl"
 
+# email address validation
 qtext = '[^\\x0d\\x22\\x5c\\x80-\\xff]'
 dtext = '[^\\x0d\\x5b-\\x5d\\x80-\\xff]'
 atom = '[^\\x00-\\x20\\x22\\x28\\x29\\x2c\\x2e\\x3a-\\x3c\\x3e\\x40\\x5b-\\x5d\\x7f-\\xff]+'
@@ -478,6 +580,7 @@ def isValidEmailAddress(email):
     else:
         return False
 
+# alert switch, True in default
 Alert_runing_switch = True
 
 # global functions can be called in jinja2 templates
@@ -489,6 +592,7 @@ def noteHasCol10(note):
     return False
 jinja_env.globals.update(noteHasCol10=noteHasCol10)
 
+# Handler for UWaterloo Course Notifier
 class CourseEnrolmentNotifier(ECEHandle):
     # data used for post get data
     level = ""
@@ -513,6 +617,7 @@ class CourseEnrolmentNotifier(ECEHandle):
             query_id = int(query_id)
         return query_id
 
+    # render different pages
     def render_front_page(self, sess_values = "", term_dic = "", subject_values = ""):
         self.process_user_area()
         self.render('/course-enrol/cen-front.html', sess_values = sess_values, term_dic = term_dic, subject_values = subject_values, user_area = self.user_area)
@@ -682,6 +787,8 @@ class CourseEnrolmentNotifier(ECEHandle):
         else:
             self.render_error_page(errors = ["Sorry...", "Query Response Time Out!", "Please try again later..."])
 
+    # read query list from the courese schedule front page
+    # lis the options for querying
     def readQueryFrontPage(self, url):
         try:
             content = urllib2.urlopen(url).read()
@@ -742,6 +849,121 @@ class CourseEnrolmentNotifier(ECEHandle):
             return True
         else:
             return False
+
+    def readQueryResult(self, query_url, query_obj, query_id):
+        try:
+            query_result = urllib2.urlopen(query_url, query_obj).read()
+        except urllib2.URLError:
+            return 'URL ERROR'
+        if query_result:
+            Dic_CCourse_clear(query_id)
+            Dic_CClass_clear(query_id)
+            soup = BeautifulSoup(query_result)
+            table = soup.table
+            if table:
+                if self.readCourses(table, query_id):
+                    return True
+                else:
+                    return 'TABLE ERROR'
+            else:
+                self.render_error_page(errors = ["Sorry...", "Sorry, but your query has no matches."])
+                return 'NO RESULT'
+        else:
+            return False
+
+    def readCourses(self, table, query_id):
+        subject = None
+        catalog_num = 'NULL'
+        units = None
+        title = None
+        note = None
+        lenOfChildren = len(list(table.children))
+        row = 0
+        while row < lenOfChildren:
+            # escape end line
+            tr = table.contents[row]
+            if tr == u'\n':
+                row += 1
+                continue
+            # course head row
+            elif len(list(tr.children)) == 7 and str(tr.get_text().strip().split()[0]) == str(self.subject):
+                # #clear old data
+                # subject = None
+                # catalog_num = 'NULL'
+                # units = None
+                # title = None
+                # # set new data
+                # try:
+                #     subject = str(tr.contents[0].string.strip())
+                # except:
+                #     subject = None
+                # try:
+                #     catalog_num = str(tr.contents[2].string.strip())
+                #     if catalog_num == "":
+                #         catalog_num = 'NULL'
+                # except:
+                #     catalog_num = 'NULL'
+                # try:
+                #     units = float(tr.contents[3].string.strip())
+                # except:
+                #     units = None
+                # try:
+                #     title = str(tr.contents[5].string.strip())
+                # except:
+                #     title = None
+
+                #if catalog num == "", no need to read this entry!
+                row += 6
+                continue
+            elif len(list(tr.children)) == 8 and str(tr.get_text().strip().split()[0]) == str(self.subject):
+                #clear old data
+                subject = None
+                catalog_num = 'NULL'
+                units = None
+                title = None
+                # set new data
+                try:
+                    subject = str(tr.contents[0].string.strip())
+                except:
+                    subject = None
+                try:
+                    catalog_num = str(tr.contents[2].string.strip())
+                    if catalog_num == "":
+                        catalog_num = 'NULL'
+                except:
+                    catalog_num = 'NULL'
+                try:
+                    units = float(tr.contents[4].string.strip())
+                except:
+                    units = None
+                try:
+                    title = str(tr.contents[6].string.strip())
+                except:
+                    title = None
+                row += 1
+                continue
+            elif len(list(tr.children)) == 1 and (not tr.get_text().strip() == u'') and tr.get_text().strip().split()[0] == u'Notes:':
+                note = None
+                try:
+                    note = str(tr.get_text().strip())
+                except:
+                    note = None
+                row += 1
+                continue
+            elif len(list(tr.children)) == 2 and (not tr.table == None):
+                if note:
+                    Dic_CCourse_put(query_id, subject + "-" + str(catalog_num), CCourse(subject, catalog_num, units, title, note))
+                else:
+                    Dic_CCourse_put(query_id, subject + "-" + str(catalog_num), CCourse(subject, catalog_num, units, title))
+                if self.readClasses(tr.table, subject + "-" + str(catalog_num), subject, catalog_num, query_id):
+                    row += 1
+                    continue
+                else:
+                    return False
+            else:
+                row += 1
+                continue
+        return True
 
     def readClasses(self, table, id, subject, catalog_num, query_id):
         class_num = None
@@ -929,121 +1151,7 @@ class CourseEnrolmentNotifier(ECEHandle):
                 continue
         return True
 
-    def readCourses(self, table, query_id):
-        subject = None
-        catalog_num = 'NULL'
-        units = None
-        title = None
-        note = None
-        lenOfChildren = len(list(table.children))
-        row = 0
-        while row < lenOfChildren:
-            # escape end line
-            tr = table.contents[row]
-            if tr == u'\n':
-                row += 1
-                continue
-            # course head row
-            elif len(list(tr.children)) == 7 and str(tr.get_text().strip().split()[0]) == str(self.subject):
-                # #clear old data
-                # subject = None
-                # catalog_num = 'NULL'
-                # units = None
-                # title = None
-                # # set new data
-                # try:
-                #     subject = str(tr.contents[0].string.strip())
-                # except:
-                #     subject = None
-                # try:
-                #     catalog_num = str(tr.contents[2].string.strip())
-                #     if catalog_num == "":
-                #         catalog_num = 'NULL'
-                # except:
-                #     catalog_num = 'NULL'
-                # try:
-                #     units = float(tr.contents[3].string.strip())
-                # except:
-                #     units = None
-                # try:
-                #     title = str(tr.contents[5].string.strip())
-                # except:
-                #     title = None
-
-                #if catalog num == "", no need to read this entry!
-                row += 6
-                continue
-            elif len(list(tr.children)) == 8 and str(tr.get_text().strip().split()[0]) == str(self.subject):
-                #clear old data
-                subject = None
-                catalog_num = 'NULL'
-                units = None
-                title = None
-                # set new data
-                try:
-                    subject = str(tr.contents[0].string.strip())
-                except:
-                    subject = None
-                try:
-                    catalog_num = str(tr.contents[2].string.strip())
-                    if catalog_num == "":
-                        catalog_num = 'NULL'
-                except:
-                    catalog_num = 'NULL'
-                try:
-                    units = float(tr.contents[4].string.strip())
-                except:
-                    units = None
-                try:
-                    title = str(tr.contents[6].string.strip())
-                except:
-                    title = None
-                row += 1
-                continue
-            elif len(list(tr.children)) == 1 and (not tr.get_text().strip() == u'') and tr.get_text().strip().split()[0] == u'Notes:':
-                note = None
-                try:
-                    note = str(tr.get_text().strip())
-                except:
-                    note = None
-                row += 1
-                continue
-            elif len(list(tr.children)) == 2 and (not tr.table == None):
-                if note:
-                    Dic_CCourse_put(query_id, subject + "-" + str(catalog_num), CCourse(subject, catalog_num, units, title, note))
-                else:
-                    Dic_CCourse_put(query_id, subject + "-" + str(catalog_num), CCourse(subject, catalog_num, units, title))
-                if self.readClasses(tr.table, subject + "-" + str(catalog_num), subject, catalog_num, query_id):
-                    row += 1
-                    continue
-                else:
-                    return False
-            else:
-                row += 1
-                continue
-        return True
-
-    def readQueryResult(self, query_url, query_obj, query_id):
-        try:
-            query_result = urllib2.urlopen(query_url, query_obj).read()
-        except urllib2.URLError:
-            return 'URL ERROR'
-        if query_result:
-            Dic_CCourse_clear(query_id)
-            Dic_CClass_clear(query_id)
-            soup = BeautifulSoup(query_result)
-            table = soup.table
-            if table:
-                if self.readCourses(table, query_id):
-                    return True
-                else:
-                    return 'TABLE ERROR'
-            else:
-                self.render_error_page(errors = ["Sorry...", "Sorry, but your query has no matches."])
-                return 'NO RESULT'
-        else:
-            return False
-
+# the class page for one course
 class CEN_class_page(CourseEnrolmentNotifier):
     def get(self, course_id):
         # used for separate different users query result
@@ -1056,6 +1164,7 @@ class CEN_class_page(CourseEnrolmentNotifier):
             self.error(404)
             self.render_error_page(errors = ["Sorry...", "404 NOT FOUND, this page is not found!"])
 
+# the page for setting alerts when click "set an alert" on the class page
 class CEN_alert(CourseEnrolmentNotifier):
     theCourse = None
     theClass = None
@@ -1119,6 +1228,8 @@ class CEN_alert(CourseEnrolmentNotifier):
                     Class Number: %(class_num)s
 
                     When spot is open, you will receive an email notification!
+                    For not sending too many email notifications,
+                    You will receive 6 email notifications.
                     ----------------------
                     UWaterloo Course Notifier
                     by Honghao Zhang
@@ -1305,6 +1416,7 @@ class CEN_alert(CourseEnrolmentNotifier):
             logging.info("shabi bu copy!!!")
 
 
+# used for run scheduled query
 class CEN_alert_run(CEN_alert):
     def get(self):
         global Alert_runing_switch
