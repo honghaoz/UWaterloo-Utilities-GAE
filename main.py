@@ -505,15 +505,15 @@ class ECEHandle(webapp2.RequestHandler):
 class HomePage(ECEHandle):
     def get(self):
         if not self.is_in_black_list():
-            self.process_user_area()
+            # self.process_user_area()
             apps = ndb.gql("SELECT * FROM Apps")
-            self.render('homepage.html', apps = apps, user_area = self.user_area)
+            self.render('homepage.html', apps = apps)
 # add app for UW Utilities
 class AddApp(ECEHandle):
     referer = ""
     def render_page(self):
-        self.process_user_area()
-        self.render('add-apps-form.html', referer = self.referer, user_area = self.user_area)
+        #self.process_user_area()
+        self.render('add-apps-form.html', referer = self.referer)
     def post(self):
         name = self.request.get('name')
         link = self.request.get('link')
@@ -536,8 +536,8 @@ class AddApp(ECEHandle):
 class AddBlack(ECEHandle):
     referer = ""
     def render_page(self):
-        self.process_user_area()
-        self.render('add-black-form.html', referer = self.referer, user_area = self.user_area)
+        #self.process_user_area()
+        self.render('add-black-form.html', referer = self.referer)
     def post(self):
         email_black = self.request.get('email_black')
         redirect_link = self.request.get("redirect_link")
