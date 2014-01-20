@@ -859,6 +859,17 @@ select {
     background: url('/images/google-png/White-signin_Long_press_20dp.png') top right no-repeat;  
 }
 
+.rate {
+	color: black;
+    text-decoration: none;
+}
+
+.rate:active {
+	color: black;
+    text-decoration: none;
+}
+
+
 .logout-link {
     color: gray;
     text-decoration: none;

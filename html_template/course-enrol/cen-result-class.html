@@ -109,7 +109,7 @@
 				{% if class.instructor == None %}
 					<td></td>
 				{% else %}
-					<td align="center">{{class.instructor}}</td>
+					<td align="center"><a href="http://www.ratemyprofessors.com/search.jsp?query1={{class.instructor.split(',')[0]}}+{{class.instructor.split(',')[1]}}%2C+University+of+Waterloo&queryoption1=TEACHER&search_submit1=Search", style="rate">{{class.instructor}}</a></td>
 				{% endif %}
 			</tr>
 			
