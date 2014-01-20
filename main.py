@@ -506,7 +506,7 @@ class HomePage(ECEHandle):
     def get(self):
         if not self.is_in_black_list():
             # self.process_user_area()
-            apps = ndb.gql("SELECT * FROM Apps ORDER BY created_time DESC")
+            apps = ndb.gql("SELECT * FROM Apps ORDER BY created_time ASC")
             self.render('homepage.html', apps = apps)
 # add app for UW Utilities
 class AddApp(ECEHandle):
