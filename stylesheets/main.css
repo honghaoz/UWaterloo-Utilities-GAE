@@ -210,6 +210,12 @@ input[type=text] {
 	background: rgba(194,229,255,0.29);
 	font-size:medium;
 	
+	-webkit-transition: background 0.4s ease;  
+    -moz-transition: background 0.4s ease;  
+    -o-transition: background 0.4s ease;  
+    -ms-transition: background 0.4s ease;  
+    transition: background 0.4s ease;
+	
 }
 
 .input-textarea:active {
@@ -861,14 +867,16 @@ select {
 
 .rate {
 	color: black;
-    text-decoration: none;
 }
 
-.rate:active {
+.rate:hover {
+	color: #346bb9;
+}
+
+
+.rate:visited {
 	color: black;
-    text-decoration: none;
 }
-
 
 .logout-link {
     color: gray;

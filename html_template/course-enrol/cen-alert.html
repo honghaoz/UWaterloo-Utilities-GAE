@@ -93,13 +93,13 @@
 				{% if theClass.bldg_room == None %}
 					<td></td>
 				{% else %}
-					<td align="center">{{theClass.bldg_room}}</td>
+					<td align="center"><a href="http://maps.google.com/maps?q={{theClass.bldg_room}},+University+of+Waterloo,+ON,+Canada", class="rate" target="_blank">{{theClass.bldg_room}}</a></td>
 				{% endif %}
 				
 				{% if theClass.instructor == None %}
 					<td></td>
 				{% else %}
-					<td align="center">{{theClass.instructor}}</td>
+					<td align="center"><a href="http://www.ratemyprofessors.com/search.jsp?query1={{theClass.instructor.split(',')[0]}}+{{theClass.instructor.split(',')[1]}}%2C+University+of+Waterloo&queryoption1=TEACHER&search_submit1=Search", class="rate" target="_blank">{{theClass.instructor}}</a></td>
 				{% endif %}
 			</tr>
 			
@@ -115,13 +115,13 @@
 					{% if note.bldg_room == None %}
 					   <td></td>
 					{% else %}
-					   <td align="center">{{note.bldg_room}}</td>
+					   <td align="center"><a href="http://maps.google.com/maps?q={{note.bldg_room}},+University+of+Waterloo,+ON,+Canada", class="rate" target="_blank">{{note.bldg_room}}</a></td>
 					{% endif %}
 					
 					{% if note.instructor == None %}
 					   <td></td>
 					{% else %}
-					   <td align="center">{{note.instructor}}</td>
+					   <td align="center"><a href="http://www.ratemyprofessors.com/search.jsp?query1={{note.instructor.split(',')[0]}}+{{note.instructor.split(',')[1]}}%2C+University+of+Waterloo&queryoption1=TEACHER&search_submit1=Search", class="rate" target="_blank">{{note.instructor}}</a></td>
 					{% endif %}
 					
 					<td style="font-size:12px;"><i>{{note.col6}}</i></td>
@@ -147,13 +147,13 @@
 					{% if note.bldg_room == None %}
 					   <td></td>
 					{% else %}
-					   <td align="center">{{note.bldg_room}}</td>
+					   <td align="center"><a href="http://maps.google.com/maps?q={{note.bldg_room}},+University+of+Waterloo,+ON,+Canada", class="rate" target="_blank">{{note.bldg_room}}</a></td>
 					{% endif %}
 					
 					{% if note.instructor == None %}
 					   <td></td>
 					{% else %}
-					   <td align="center">{{note.instructor}}</td>
+					   <td align="center"><a href="http://www.ratemyprofessors.com/search.jsp?query1={{note.instructor.split(',')[0]}}+{{note.instructor.split(',')[1]}}%2C+University+of+Waterloo&queryoption1=TEACHER&search_submit1=Search", class="rate" target="_blank">{{note.instructor}}</a></td>
 					{% endif %}
 				</tr>
 				{% endif %}

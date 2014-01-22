@@ -103,13 +103,13 @@
 				{% if class.bldg_room == None %}
 					<td></td>
 				{% else %}
-					<td align="center">{{class.bldg_room}}</td>
+					<td align="center"><a href="http://maps.google.com/maps?q={{class.bldg_room}},+University+of+Waterloo,+ON,+Canada", class="rate" target="_blank">{{class.bldg_room}}</a></td>
 				{% endif %}
 				
 				{% if class.instructor == None %}
 					<td></td>
 				{% else %}
-					<td align="center"><a href="http://www.ratemyprofessors.com/search.jsp?query1={{class.instructor.split(',')[0]}}+{{class.instructor.split(',')[1]}}%2C+University+of+Waterloo&queryoption1=TEACHER&search_submit1=Search", style="rate">{{class.instructor}}</a></td>
+					<td align="center"><a href="http://www.ratemyprofessors.com/search.jsp?query1={{class.instructor.split(',')[0]}}+{{class.instructor.split(',')[1]}}%2C+University+of+Waterloo&queryoption1=TEACHER&search_submit1=Search", class="rate" target="_blank">{{class.instructor}}</a></td>
 				{% endif %}
 			</tr>
 			
@@ -125,13 +125,13 @@
 					{% if note.bldg_room == None %}
 					   <td></td>
 					{% else %}
-					   <td align="center">{{note.bldg_room}}</td>
+					   <td align="center"><a href="http://maps.google.com/maps?q={{note.bldg_room}},+University+of+Waterloo,+ON,+Canada", class="rate" target="_blank">{{note.bldg_room}}</a></td>
 					{% endif %}
 					
 					{% if note.instructor == None %}
 					   <td></td>
 					{% else %}
-					   <td align="center">{{note.instructor}}</td>
+					   <td align="center"><a href="http://www.ratemyprofessors.com/search.jsp?query1={{note.instructor.split(',')[0]}}+{{note.instructor.split(',')[1]}}%2C+University+of+Waterloo&queryoption1=TEACHER&search_submit1=Search", class="rate" target="_blank">{{note.instructor}}</a></td>
 					{% endif %}
 					
 					<td style="font-size:12px;"><i>{{note.col6}}</i></td>
@@ -157,13 +157,13 @@
 					{% if note.bldg_room == None %}
 					   <td></td>
 					{% else %}
-					   <td align="center">{{note.bldg_room}}</td>
+					   <td align="center"><a href="http://maps.google.com/maps?q={{note.bldg_room}},+University+of+Waterloo,+ON,+Canada", class="rate" target="_blank">{{note.bldg_room}}</a></td>
 					{% endif %}
 					
 					{% if note.instructor == None %}
 					   <td></td>
 					{% else %}
-					   <td align="center">{{note.instructor}}</td>
+					   <td align="center"><a href="http://www.ratemyprofessors.com/search.jsp?query1={{note.instructor.split(',')[0]}}+{{note.instructor.split(',')[1]}}%2C+University+of+Waterloo&queryoption1=TEACHER&search_submit1=Search", class="rate" target="_blank">{{note.instructor}}</a></td>
 					{% endif %}
 				</tr>
 				{% endif %}
