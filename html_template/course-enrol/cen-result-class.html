@@ -103,7 +103,7 @@
 				{% if class.bldg_room == None %}
 					<td></td>
 				{% else %}
-					<td align="center"><a href="http://maps.google.com/maps?q={{class.bldg_room}},+University+of+Waterloo,+ON,+Canada", class="rate" target="_blank">{{class.bldg_room}}</a></td>
+					<td align="center"><a href="http://maps.google.com/maps?q={{class.bldg_room.split()[0]}},+University+of+Waterloo,+ON,+Canada", class="rate" target="_blank">{{class.bldg_room}}</a></td>
 				{% endif %}
 				
 				{% if class.instructor == None %}
@@ -125,7 +125,7 @@
 					{% if note.bldg_room == None %}
 					   <td></td>
 					{% else %}
-					   <td align="center"><a href="http://maps.google.com/maps?q={{note.bldg_room}},+University+of+Waterloo,+ON,+Canada", class="rate" target="_blank">{{note.bldg_room}}</a></td>
+					   <td align="center"><a href="http://maps.google.com/maps?q={{note.bldg_room.split()[0]}},+University+of+Waterloo,+ON,+Canada", class="rate" target="_blank">{{note.bldg_room}}</a></td>
 					{% endif %}
 					
 					{% if note.instructor == None %}
@@ -157,7 +157,7 @@
 					{% if note.bldg_room == None %}
 					   <td></td>
 					{% else %}
-					   <td align="center"><a href="http://maps.google.com/maps?q={{note.bldg_room}},+University+of+Waterloo,+ON,+Canada", class="rate" target="_blank">{{note.bldg_room}}</a></td>
+					   <td align="center"><a href="http://maps.google.com/maps?q={{note.bldg_room.split()[0]}},+University+of+Waterloo,+ON,+Canada", class="rate" target="_blank">{{note.bldg_room}}</a></td>
 					{% endif %}
 					
 					{% if note.instructor == None %}
