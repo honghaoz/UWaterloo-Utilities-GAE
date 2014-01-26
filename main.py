@@ -45,6 +45,7 @@ from time import gmtime, strftime, localtime
 from google.appengine.api import users
 
 import datetime
+import requests
 
 # Global variables for jinja environment
 template_dir = os.path.join(os.path.dirname(__file__), 'html_template')
@@ -1151,6 +1152,26 @@ class CourseEnrolmentNotifier(ECEHandle):
                 continue
         return True
 
+class cenJson(CourseEnrolmentNotifier):
+    def get(self):
+        jsonDic = {}
+
+        try:
+            content = urllib2.urlopen("http://www.adm.uwaterloo.ca/infocour/CIR/SA/grad.html").read()
+        except urllib2.URLError:
+            logging.error("json error")
+        if content:
+            soup = BeautifulSoup(content)
+
+            # sess
+            sess = soup.find_all("select", {"name" : "sess"})
+            sess = BeautifulSoup(str(sess[0]))
+            # sess_selected = <option selected="" value="1141">1141 <option value="1145">1145 </option></option>
+            sess_selected = BeautifulSoup(str(sess.find_all(selected=True)))
+            sess_selected = sess_selected.option['value']
+            jsonDic['current_term'] = sess_selected
+            self.write(json.dumps(jsonDic))
+
 # the class page for one course
 class CEN_class_page(CourseEnrolmentNotifier):
     def get(self, course_id):
@@ -1642,6 +1663,39 @@ class FlushCourseClass(ECEHandle):
 
 # python regex???? to solve it!!!!!!
 
+
+class cenCourseJson(CourseEnrolmentNotifier):
+    def get(self, term, courseID, class_num, email):
+        subject = courseID.split('-')[0]
+        catalog_num = courseID.split('-')[1]
+        #self.write(term + subject + catalog_num + class_num + email)
+        if int(catalog_num[0]) < 6:
+            level = 'under'
+        else:
+            level = 'grad'
+        query_dic = {}
+        query_dic['level'] = level
+        query_dic['sess'] = term
+        query_dic['subject'] = subject
+        query_dic['cournum'] = catalog_num
+
+        targetURL = "http://uw.honghaoz.com/uw-cen"
+
+        expires_date = datetime.datetime.now() + datetime.timedelta(minutes = 20)
+        expires = expires_date.strftime('%a, %d %b %Y %H:%M:%S GMT')
+        cookies = dict(query_id=self.make_secure_val("136"), Path="/uw-cen", expire=expires)
+
+        #simulate query 
+        #GET front page
+        requests.get(url = targetURL, cookies = cookies)
+        #POST front page
+        requests.post(url= targetURL, data= query_dic, cookies = cookies)
+        #POST to alert page
+        requests.post(url= targetURL + "/" + subject + "-" + catalog_num + "-" + class_num, data = {'email' : email}, cookies = cookies)
+        response = {"response" : "successfully"}
+        self.write(json.dumps(response));
+        
+
 courseID = r'([A-Z]+\-[a-zA-Z0-9]+)'
 classID = r'([A-Z]+\-[a-zA-Z0-9]+\-[0-9]+)'
 class_num = r'([0-9]+)'
@@ -1651,6 +1705,8 @@ app = webapp2.WSGIApplication([
     ('/add-app', AddApp),
     ('/add-black', AddBlack),
     ('/uw-cen/?', CourseEnrolmentNotifier),
+    ('/uw-cen.json', cenJson),
+    ('/uw-cen/([0-9]{4})-%s-%s-%s.json' % (courseID, class_num, EMAIL), cenCourseJson),
     ('/uw-cen/' + courseID, CEN_class_page),
     ('/uw-cen/' + classID, CEN_alert),
     ('/uw-cen/feedback', CEN_feedback),
