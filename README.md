@@ -5,6 +5,7 @@ Some Useful Web Utilities for UW students
 
 Website link:
 <http://uw.honghaoz.com>
+
 <http://uw-apps.appspot.com>
 
 1. UWaterloo Course Notifier: <http://uw.honghaoz.com/uw-cen>
