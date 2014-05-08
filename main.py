@@ -1456,7 +1456,12 @@ class CEN_alert(CourseEnrolmentNotifier):
             logging.info("copy!!!")
             for alert in ListOfDB_Alert:
                 alert_id = alert.key.id() #ECE-628-4400-5
-                searchId = alert_id[:alert_id.rfind("-")] #ECE-628-4400
+                searchId = ""
+                if alert_id.count("-") == 3:
+                    searchId = alert_id[:alert_id.rfind("-")] #ECE-628-4400
+                else:
+                    searchId = alert_id
+                logging.error(searchId)
                 if Dic_Alert_get_by_id(searchId) == None:
                     newAlert = Alert(alert.level, 
                                      alert.sess, 
@@ -1563,6 +1568,7 @@ class CEN_alert_run(CEN_alert):
                     enrol_tot = None
                 # refresh Dict_Alert
                 alreadyExistAlert = Dic_Alert_get_by_id(id + "-" + str(alert.class_num))
+
                 #logging.info("id " + id + "-" + str(alert.class_num))
                 alreadyExistAlert.enrol_cap = enrol_cap
                 alreadyExistAlert.enrol_tot = enrol_tot
