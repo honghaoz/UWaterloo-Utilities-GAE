@@ -313,7 +313,7 @@ class Alert:
             Go QUEST and add it Now!
 
             For not sending too many email notifications,
-            You will receive %(send_time)s more email notifications, if you want to receive more, adding this email address again.
+            You will receive %(send_time)s more email notifications, if you want to receive more, add this email address again.
             ----------------------
             UWaterloo Course Notifier
             by Honghao Zhang
