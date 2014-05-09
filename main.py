@@ -66,6 +66,7 @@ class Apps(ndb.Model):
     last_modified = ndb.DateTimeProperty(auto_now = True)
 
 # Deleted Class
+
 # class Class(ndb.Model):
 #     subject = ndb.StringProperty(required = True)
 #     catalog_num = ndb.StringProperty(required = True)
@@ -313,7 +314,7 @@ class Alert:
             Go QUEST and add it Now!
 
             For not sending too many email notifications,
-            You will receive %(send_time)s more email notifications, if you want to receive more, adding this email address again.
+            You will receive %(send_time)s more email notifications, if you want to receive more, delete this email address and reset the alert.
             ----------------------
             UWaterloo Course Notifier
             by Honghao Zhang
@@ -362,7 +363,6 @@ class Alert:
         for user, email_list in self.user_email.items():
             for email in email_list:
                 logging.info(email)
-                #logging.info(email_addr)
                 if email[0] == email_addr:
                     return email[1]
         return None
@@ -1331,7 +1331,6 @@ class CEN_alert(CourseEnrolmentNotifier):
 
                 # add new Alert to Dic_Alert
                 alreadyExistAlert = Dic_Alert_get_by_id(id + "-" + str(class_num))
-                # if there is no any alert
                 if alreadyExistAlert == None:
                     newAlert = Alert(level_id, 
                                  sess_id, 
@@ -1344,7 +1343,6 @@ class CEN_alert(CourseEnrolmentNotifier):
                                  {user_name : [[email, 0]]})
                     Dic_Alert_put(id + "-" + str(class_num), newAlert)
                 else:
-                    # email to be added is not added before
                     if not email in alreadyExistAlert.email:
                         alreadyExistAlert.enrol_cap = enrol_cap
                         alreadyExistAlert.enrol_tot = enrol_tot
@@ -1355,19 +1353,8 @@ class CEN_alert(CourseEnrolmentNotifier):
                         else:
                             alreadyExistAlert.user_email[user_name] = [[email, 0]]
                     else:
-                        # email to be added is added before, reset the send_time
-                        alreadyExistAlert.enrol_cap = enrol_cap
-                        alreadyExistAlert.enrol_tot = enrol_tot
-                        if user_name in alreadyExistAlert.user_email:
-                            old_user_email = alreadyExistAlert.user_email[user_name]
-                            for each_email in old_user_email:
-                                if each_email[0] == email:
-                                    each_email[1] = 0
-                                    break
-                        else:
-                            logging.error("email exist, but user not exist??")
-                        #return "EMAIL_EXISIT"
-                        #break
+                        return "EMAIL_EXISIT"
+                        break
 
                 # add new DB_Alert to Database
                 alreadyExistDB_Alert = DB_Alert.query(DB_Alert.subject == subject, 
@@ -1424,8 +1411,6 @@ class CEN_alert(CourseEnrolmentNotifier):
 
                     #new_email = copy.copy(alreadyExistDB_Alert.email)
                     if not email in alreadyExistDB_Alert.email:
-                        alreadyExistDB_Alert.enrol_cap = enrol_cap
-                        alreadyExistDB_Alert.enrol_tot = enrol_tot
                         alreadyExistDB_Alert.email.append(email)
                         alreadyExistDB_Alert.queried_time + 1
                         #new_user_email = copy.copy(alreadyExistDB_Alert.user_email) #{u'zhh358': [[u'1@1.com', 0]]}
@@ -1457,19 +1442,8 @@ class CEN_alert(CourseEnrolmentNotifier):
                         #          user_email = new_user_email,
                         #          queried_time = new_queried_time).put()
                     else:
-                        alreadyExistDB_Alert.enrol_cap = enrol_cap
-                        alreadyExistDB_Alert.enrol_tot = enrol_tot
-                        if user_name in alreadyExistDB_Alert.user_email:
-                            old_user_email = alreadyExistDB_Alert.user_email[user_name]
-                            for each_email in old_user_email:
-                                if each_email[0] == email:
-                                    each_email[1] = 0
-                                    break
-                        else:
-                            logging.error("email exist, but user not exist??")
-                        alreadyExistDB_Alert.put()
-                        # return "EMAIL_EXISIT"
-                        # break
+                        return "EMAIL_EXISIT"
+                        break
                 break
             else:
                 row += 1
@@ -1605,8 +1579,6 @@ class CEN_alert_run(CEN_alert):
                                                       DB_Alert.class_num == alert.class_num).order(-DB_Alert.queried_time).get()
                 if not alreadyExistDB_Alert == None:
                     alreadyExistDB_Alert.queried_time += 1
-                    alreadyExistDB_Alert.enrol_cap = enrol_cap
-                    alreadyExistDB_Alert.enrol_tot = enrol_tot
                     alreadyExistDB_Alert.put()
                     # new_queried_time = alreadyExistDB_Alert.queried_time + 1
                     # DB_Alert(id = id + "-" + str(alert.class_num) + "-" + str(new_queried_time),
