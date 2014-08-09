@@ -1294,10 +1294,14 @@ class CEN_alert(CourseEnrolmentNotifier):
                 row += 1
                 continue
             elif len(list(tr.children)) == 2 and (not tr.table == None):
+                logging.info("Run read class")
                 readClass_result = self.readClasses_Alert(tr.table, subject + "-" + str(catalog_num), level_id, sess_id, subject, catalog_num, class_num, email, user_name)
+                logging.info("End read class")
                 if readClass_result == "EMAIL_EXISIT":
                     return "EMAIL_EXISIT"
                 elif readClass_result == True:
+                    # Fix!!!
+                    return True
                     row += 1
                     continue
                 else:
@@ -1317,7 +1321,12 @@ class CEN_alert(CourseEnrolmentNotifier):
             if tr == u'\n':
                 row += 1
                 continue
+            logging.info("len: %d", len(list(tr.children)))
+            logging.info("Class number: %d", int(class_num))
+            logging.info("Compared: %s\n", tr.contents[0].string.strip())
+            # Match class number, only run once
             if 9 < len(list(tr.children)) <= 13 and int(class_num) == int(tr.contents[0].string.strip()):
+                logging.info("Enter!!!!")
                 enrol_cap = 0
                 enrol_tot = 0
                 try:
@@ -1328,6 +1337,8 @@ class CEN_alert(CourseEnrolmentNotifier):
                     enrol_tot = int(tr.contents[7].string.strip())
                 except:
                     enrol_tot = None
+
+                # logging.info("add new Alert to Dic_Alert!!!!")
 
                 # add new Alert to Dic_Alert
                 alreadyExistAlert = Dic_Alert_get_by_id(id + "-" + str(class_num))
@@ -1368,6 +1379,8 @@ class CEN_alert(CourseEnrolmentNotifier):
                             logging.error("email exist, but user not exist??")
                         #return "EMAIL_EXISIT"
                         #break
+
+                # logging.info("add new DB_Alert to Database!!!!")
 
                 # add new DB_Alert to Database
                 alreadyExistDB_Alert = DB_Alert.query(DB_Alert.subject == subject, 
@@ -1470,6 +1483,9 @@ class CEN_alert(CourseEnrolmentNotifier):
                         alreadyExistDB_Alert.put()
                         # return "EMAIL_EXISIT"
                         # break
+                logging.info("Return!!!!")
+                return True
+                logging.info("Break!!!!")
                 break
             else:
                 row += 1
@@ -1562,6 +1578,7 @@ class CEN_alert_run(CEN_alert):
                 continue
             elif len(list(tr.children)) == 2 and (not tr.table == None):
                 if self.readClasses_Refresh(tr.table, alert.subject + "-" + str(alert.catalog_num), alert):
+                    return True
                     row += 1
                     continue
                 else:
@@ -1623,6 +1640,7 @@ class CEN_alert_run(CEN_alert):
                 else:
                     logging.error("Query Failed!!!!")
                     return False
+                return True
                 break
             else:
                 row += 1
@@ -1738,7 +1756,6 @@ class FlushCourseClass(ECEHandle):
 
 # python regex???? to solve it!!!!!!
 
-
 class cenCourseJson(CourseEnrolmentNotifier):
     def get(self, term, courseID, class_num, email):
         subject = courseID.split('-')[0]
@@ -1775,6 +1792,7 @@ courseID = r'([A-Z]+\-[a-zA-Z0-9]+)'
 classID = r'([A-Z]+\-[a-zA-Z0-9]+\-[0-9]+)'
 class_num = r'([0-9]+)'
 EMAIL = r'([\w-]+@[\w-]+\.+[\w-]+)'
+
 app = webapp2.WSGIApplication([
     ('/?', HomePage),
     ('/add-app', AddApp),

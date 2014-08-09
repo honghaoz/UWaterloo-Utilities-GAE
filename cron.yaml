@@ -1,6 +1,6 @@
 cron:
-- description: alert/run every 20 minutes
+- description: alert/run every 30 minutes
   url: /uw-cen/alert/run
-  schedule: every 20 minutes from 7:50 to 20:00
+  schedule: every 30 minutes from 8:01 to 20:01
   timezone: Canada/Eastern
   target: alertrun
