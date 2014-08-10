@@ -1503,7 +1503,7 @@ class CEN_alert(CourseEnrolmentNotifier):
                     searchId = alert_id[:alert_id.rfind("-")] #ECE-628-4400
                 else:
                     searchId = alert_id
-                logging.error(searchId)
+                logging.info(searchId)
                 if Dic_Alert_get_by_id(searchId) == None:
                     newAlert = Alert(alert.level, 
                                      alert.sess, 
